@@ -6,7 +6,7 @@ use crate::aria2c;
 pub struct Session {
 	uid: Uuid,
 	url: String,
-	started: bool
+	started: bool,
 }
 
 impl Session {
@@ -14,7 +14,7 @@ impl Session {
 		Self {
 			uid: Uuid::new_v4(),
 			url,
-			started: false
+			started: false,
 		}
 	}
 

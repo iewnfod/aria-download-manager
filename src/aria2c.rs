@@ -1,14 +1,21 @@
 use std::process::Command;
 
 use aria2_ws::Client;
+use futures::executor::block_on;
 
 const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
 static mut ARIA2C_PROCESS: Option<std::process::Child> = None;
 
-fn get_client() -> Client {
-	futures::executor::block_on(
+fn get_client() -> Option<Client> {
+	match block_on(
 		Client::connect(SERVER_URL, None)
-	).unwrap()
+	) {
+		Ok(client) => Some(client),
+		Err(_) => {
+			println!("Some Error Occurred");
+			None
+		}
+	}
 }
 
 pub fn startup() {
@@ -28,12 +35,13 @@ pub fn stop() {
 }
 
 pub fn add_uri(url: String) {
-	futures::executor::block_on(
-		get_client().add_uri(
+	block_on({
+		get_client().unwrap()
+		.add_uri(
 			vec![url],
 			None,
 			None,
 			None
 		)
-	).unwrap();
+	}).unwrap();
 }

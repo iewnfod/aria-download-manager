@@ -9,7 +9,7 @@ edition = "2021"
 aria2-ws = "0.4.0"
 eframe = "0.24.1"
 futures = "0.3.30"
-lazy_mut = "0.1.0"
+tokio = { version = "1.35.1", features = ["full"] }
 
 [dependencies.uuid]
 version = "1.6.1"

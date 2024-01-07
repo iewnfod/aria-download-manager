@@ -11,13 +11,14 @@ pub struct DownloadManager {
 
 impl DownloadManager {
 	fn new_session(&mut self) {
-		if !self.url_input.trim().is_empty() {
+		self.url_input = self.url_input.trim().to_string();
+		if !self.url_input.is_empty() {
 			let session = Session::new(self.url_input.clone());
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);
 			self.info = format!("New session to `{}`", name);
 		} else {
-			self.info = "Target cannot be empty".to_string();
+			self.info = "Target url cannot be empty".to_string();
 		}
 	}
 }
@@ -26,7 +27,7 @@ impl Default for DownloadManager {
 	fn default() -> Self {
 		Self {
 			sessions: HashMap::new(),
-			url_input: "".to_string(),
+			url_input: String::new(),
 			info: "Welcome to Aria Download Manager".to_string(),
 			wait_to_remove: vec![],
 		}
@@ -57,21 +58,23 @@ impl App for DownloadManager {
 
 		CentralPanel::default().show(ctx, |ui| {
 			ScrollArea::vertical().show(ui, |ui| {
-				for (_uid, session) in self.sessions.iter_mut() {
-					ui.horizontal(|ui| {
-						ui.label(session.get_name());
-						if ui.button("Remove").clicked() {
-							self.wait_to_remove.push(session.clone());
-						}
-					});
-					ui.horizontal(|ui| {
-						if ui.button("Start").clicked() {
-							session.start();
-						}
-						ui.add(
-							ProgressBar::new(session.get_process())
-							.text(session.get_speed())
-						);
+				for (uid, session) in self.sessions.iter_mut() {
+					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
+						ui.horizontal(|ui| {
+							ui.label(session.get_name());
+							if ui.button("Remove").clicked() {
+								self.wait_to_remove.push(session.clone());
+							}
+						});
+						ui.horizontal(|ui| {
+							if ui.button("Start").clicked() {
+								session.start();
+							}
+							ui.add(
+								ProgressBar::new(session.get_process())
+								.text(session.get_speed())
+							);
+						});
 					});
 					ui.separator();
 				}

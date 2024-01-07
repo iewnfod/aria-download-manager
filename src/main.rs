@@ -4,7 +4,8 @@ mod app;
 mod session;
 mod aria2c;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     // 启动 aria2c 服务
     aria2c::startup();
     // 应用设置
