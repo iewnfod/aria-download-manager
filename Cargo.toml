@@ -1,0 +1,19 @@
+[package]
+name = "aria-download-manager"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aria2-ws = "0.4.0"
+eframe = "0.24.1"
+futures = "0.3.30"
+lazy_mut = "0.1.0"
+
+[dependencies.uuid]
+version = "1.6.1"
+features = [
+	"v4",
+	"fast-rng"
+]
