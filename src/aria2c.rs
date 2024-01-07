@@ -1,20 +1,25 @@
 use std::process::Command;
 
-use aria2_ws::Client;
+use aria2_ws::{Client, response::Status, TaskOptions};
 use futures::executor::block_on;
+
+use crate::data::get_split_num;
 
 const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
 static mut ARIA2C_PROCESS: Option<std::process::Child> = None;
 
-fn get_client() -> Option<Client> {
-	match block_on(
-		Client::connect(SERVER_URL, None)
-	) {
-		Ok(client) => Some(client),
-		Err(_) => {
-			println!("Some Error Occurred");
-			None
+static mut CLIENT: Option<Client> = None;
+
+fn get_client() -> Client {
+	unsafe {
+		while CLIENT.is_none() {
+			CLIENT = Some(
+				block_on(
+					Client::connect(SERVER_URL, None)
+				).unwrap()
+			);
 		}
+		CLIENT.clone().unwrap()
 	}
 }
 
@@ -34,14 +39,49 @@ pub fn stop() {
 	}
 }
 
-pub fn add_uri(url: String) {
-	block_on({
-		get_client().unwrap()
+fn get_options() -> TaskOptions {
+	let mut opt = TaskOptions::default();
+	opt.split = Some(get_split_num());
+	opt
+}
+
+pub fn add_uri(url: String) -> String {
+	block_on(
+		get_client()
 		.add_uri(
 			vec![url],
-			None,
+			Some(get_options()),
 			None,
 			None
 		)
-	}).unwrap();
+	).unwrap()
+}
+
+pub fn remove(gid: String) {
+	block_on(
+		get_client()
+		.remove(gid.as_str())
+	).unwrap();
+}
+
+pub fn pause(gid: String) {
+	block_on(
+		get_client()
+		.pause(gid.as_str())
+	).unwrap();
+}
+
+pub fn unpause(gid: String) {
+	block_on(
+		get_client()
+		.unpause(gid.as_str())
+	).unwrap();
+}
+
+pub fn get_status(gid: String) -> Status {
+	let result = block_on(
+		get_client()
+		.tell_status(gid.as_str())
+	).unwrap();
+	result
 }

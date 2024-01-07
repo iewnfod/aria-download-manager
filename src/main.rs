@@ -3,6 +3,7 @@ use eframe::{egui::ViewportBuilder, NativeOptions, epaint::vec2, run_native};
 mod app;
 mod session;
 mod aria2c;
+mod data;
 
 #[tokio::main]
 async fn main() {

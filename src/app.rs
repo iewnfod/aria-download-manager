@@ -1,12 +1,13 @@
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
-use crate::{session::Session, aria2c};
+use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, set_split_num}};
 
 pub struct DownloadManager {
 	sessions: HashMap<Uuid, Session>,
 	url_input: String,
 	info: String,
 	wait_to_remove: Vec<Session>,
+	split_num_input: String,
 }
 
 impl DownloadManager {
@@ -16,10 +17,14 @@ impl DownloadManager {
 			let session = Session::new(self.url_input.clone());
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);
-			self.info = format!("New session to `{}`", name);
+			set_status_info(format!("New session to `{}`", name));
 		} else {
-			self.info = "Target url cannot be empty".to_string();
+			set_status_info("Target url cannot be empty".to_string());
 		}
+	}
+
+	fn update_setting(&self) {
+		set_split_num(self.split_num_input.clone());
 	}
 }
 
@@ -28,8 +33,9 @@ impl Default for DownloadManager {
 		Self {
 			sessions: HashMap::new(),
 			url_input: String::new(),
-			info: "Welcome to Aria Download Manager".to_string(),
+			info: String::new(),
 			wait_to_remove: vec![],
+			split_num_input: String::new(),
 		}
 	}
 }
@@ -39,10 +45,13 @@ impl App for DownloadManager {
 		// 处理内容
 		if !self.wait_to_remove.is_empty() {
 			for s in self.wait_to_remove.iter() {
+				s.remove();
 				self.sessions.remove(&s.get_uid());
 			}
 			self.wait_to_remove.clear();
 		}
+		// 获取状态栏数据
+		self.info = get_status_info();
 
 		// 绘制 ui
 		TopBottomPanel::top(Id::new("top")).show(ctx, |ui| {
@@ -54,11 +63,19 @@ impl App for DownloadManager {
 				}
 			});
 			ui.add_space(5.0);
+			ui.horizontal(|ui| {
+				ui.add(TextEdit::singleline(&mut self.split_num_input).hint_text("Split Number (16)"));
+				if ui.button("Apply").clicked() {
+					self.update_setting()
+				}
+			});
+			ui.add_space(5.0);
 		});
 
 		CentralPanel::default().show(ctx, |ui| {
 			ScrollArea::vertical().show(ui, |ui| {
 				for (uid, session) in self.sessions.iter_mut() {
+					session.update_status();
 					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
 						ui.horizontal(|ui| {
 							ui.label(session.get_name());
@@ -70,9 +87,17 @@ impl App for DownloadManager {
 							if ui.button("Start").clicked() {
 								session.start();
 							}
+							if ui.button("Pause").clicked() {
+								session.pause();
+							}
 							ui.add(
 								ProgressBar::new(session.get_process())
 								.text(session.get_speed())
+							);
+						});
+						ui.collapsing("Detailed Information", |ui| {
+							ui.label(
+								session.get_status()
 							);
 						});
 					});
