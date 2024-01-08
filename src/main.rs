@@ -5,6 +5,7 @@ mod session;
 mod aria2c;
 mod data;
 mod server;
+mod settings;
 
 #[tokio::main]
 async fn main() {

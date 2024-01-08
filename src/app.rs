@@ -1,19 +1,23 @@
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
-use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, set_split_num, get_wait_to_start, clear_wait_to_start}};
+use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start}, settings::Settings};
 
 pub struct DownloadManager {
 	sessions: HashMap<Uuid, Session>,
 	url_input: String,
 	info: String,
 	wait_to_remove: Vec<Session>,
+	settings: Settings,
 }
 
 impl DownloadManager {
 	fn new_session(&mut self) {
 		self.url_input = self.url_input.trim().to_string();
 		if !self.url_input.is_empty() {
-			let mut session = Session::new(self.url_input.clone());
+			let mut session = match Session::new(self.url_input.clone()) {
+				Ok(s) => s,
+				Err(_) => return,
+			};
 			session.start();
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);
@@ -21,6 +25,10 @@ impl DownloadManager {
 		} else {
 			set_status_info("Target url cannot be empty".to_string());
 		}
+	}
+
+	fn apply_settings(&self) {
+
 	}
 }
 
@@ -31,6 +39,7 @@ impl Default for DownloadManager {
 			url_input: String::new(),
 			info: String::new(),
 			wait_to_remove: vec![],
+			settings: Settings::default(),
 		}
 	}
 }
@@ -101,9 +110,20 @@ impl App for DownloadManager {
 		});
 
 		TopBottomPanel::bottom(Id::new("bottom")).show(ctx, |ui| {
+			ui.add_space(5.0);
 			ui.horizontal(|ui| {
 				ui.label(&self.info);
 			});
+			ui.collapsing("Settings", |ui| {
+				ScrollArea::vertical().show(ui, |ui| {
+					ui.add(TextEdit::singleline(&mut self.settings.split_num).hint_text("Section Number"));
+					ui.checkbox(&mut self.settings.proxy, "Use system Proxy");
+					if ui.button("Apply").clicked() {
+						self.apply_settings();
+					}
+				});
+			});
+			ui.add_space(5.0);
 		});
 	}
 

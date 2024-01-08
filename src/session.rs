@@ -25,20 +25,28 @@ pub struct Session {
 }
 
 impl Session {
-	pub fn new(url: String) -> Self {
-		let parsed_url = Url::parse(&url).unwrap();
+	pub fn new(url: String) -> Result<Self, ()> {
+		let parsed_url = match Url::parse(&url) {
+			Ok(u) => u,
+			Err(_) => {
+				set_status_info(format!("Invalid Url `{}`", &url));
+				return Err(());
+			}
+		};
 		let segments = parsed_url.path_segments().unwrap();
 		let name = segments.last().unwrap();
-		Self {
-			uid: Uuid::new_v4(),
-			gid: String::new(),
-			url,
-			started: false,
-			status: None,
-			update_time: 0,
-			running: false,
-			name: name.to_string(),
-		}
+		Ok(
+			Self {
+				uid: Uuid::new_v4(),
+				gid: String::new(),
+				url,
+				started: false,
+				status: None,
+				update_time: 0,
+				running: false,
+				name: name.to_string(),
+			}
+		)
 	}
 
 	pub fn get_uid(&self) -> Uuid {
