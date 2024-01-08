@@ -3,13 +3,10 @@ const pass = () => null;
 const handleError = (error) => console.log(`Error: ${error}`);
 
 chrome.downloads.onCreated.addListener(function (downloadItem) {
-    const filename = downloadItem.filename
     console.log("Download filename:", filename);
     const downloadId = downloadItem.id;
     // 获取下载信息
     let downloadData = {
-        title: filename,
-        status: 'downloading',
         downloadId: downloadId,
         size: downloadItem.totalBytes,
         webpageUrl: downloadItem.url,
