@@ -15,13 +15,13 @@ struct Info {
 async fn index(info: web::Json<Info>) -> actix_web::Result<String> {
 	println!("{:?}", &info);
 	add_wait_to_start(info.download_url.clone());
-	Ok(String::new())
+	Ok("{}".to_string())
 }
 
 pub async fn listen() {
 	println!("Start Server");
 	HttpServer::new(|| {
-		App::new().route("/", web::post().to(index))
+		App::new().route("/api", web::post().to(index))
 	})
 	.bind("127.0.0.1:63319").unwrap()
 	.run().await
