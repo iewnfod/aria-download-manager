@@ -19,6 +19,7 @@ pub struct Session {
 	started: bool,
 	status: Option<Status>,
 	update_time: usize,
+	running: bool,
 }
 
 impl Session {
@@ -30,6 +31,7 @@ impl Session {
 			started: false,
 			status: None,
 			update_time: 0,
+			running: false,
 		}
 	}
 
@@ -70,27 +72,33 @@ impl Session {
 	}
 
 	pub fn start(&mut self) {
-		if !self.started {
-			self.gid = aria2c::add_uri(self.url.clone());
-			self.started = true;
-			set_status_info(format!("Start `{}`", self.get_name()));
-		} else {
-			self.unpause();
+		if !self.running {
+			if !self.started {
+				self.gid = aria2c::add_uri(self.url.clone());
+				self.started = true;
+				self.running = true;
+				set_status_info(format!("Start `{}`", self.get_name()));
+			} else {
+				self.unpause();
+			}
 		}
 	}
 
-	pub fn remove(&self) {
+	pub fn remove(&mut self) {
 		aria2c::remove(self.gid.clone());
+		self.running = false;
 		set_status_info(format!("Remove `{}`", self.get_name()));
 	}
 
-	pub fn pause(&self) {
+	pub fn pause(&mut self) {
 		aria2c::pause(self.gid.clone());
+		self.running = false;
 		set_status_info(format!("Pause `{}`", self.get_name()));
 	}
 
-	pub fn unpause(&self) {
+	pub fn unpause(&mut self) {
 		aria2c::unpause(self.gid.clone());
+		self.running = true;
 		set_status_info(format!("Continue `{}`", self.get_name()));
 	}
 
@@ -109,14 +117,24 @@ impl Session {
 			return "This session has not started!".to_string();
 		}
 		let status = self.status.clone().unwrap();
+		let mut err_msg = String::new();
+		if let Some(err) = status.error_code {
+			err_msg = format!("
+Error Code: {}
+Error Message: {}
+			", err, status.error_message.unwrap()).trim().to_string();
+			if err == "0" {
+				err_msg = String::new();
+			}
+		}
 		format!("
 Save Path: {}
 Download Url: {}
-Pieces: {}
+{}
 			",
 			status.dir,
 			self.url,
-			status.num_pieces
+			err_msg
 		).trim().to_string()
 	}
 }

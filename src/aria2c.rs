@@ -58,24 +58,34 @@ pub fn add_uri(url: String) -> String {
 }
 
 pub fn remove(gid: String) {
-	block_on(
+	pause(gid.clone());
+	match block_on(
 		get_client()
 		.remove(gid.as_str())
-	).unwrap();
+	) {
+		Ok(_) => (),
+		Err(_) => (),
+	}
 }
 
 pub fn pause(gid: String) {
-	block_on(
+	match block_on(
 		get_client()
 		.pause(gid.as_str())
-	).unwrap();
+	) {
+		Ok(_) => (),
+		Err(_) => (),
+	}
 }
 
 pub fn unpause(gid: String) {
-	block_on(
+	match block_on(
 		get_client()
 		.unpause(gid.as_str())
-	).unwrap();
+	) {
+		Ok(_) => (),
+		Err(_) => (),
+	}
 }
 
 pub fn get_status(gid: String) -> Status {

@@ -14,7 +14,8 @@ impl DownloadManager {
 	fn new_session(&mut self) {
 		self.url_input = self.url_input.trim().to_string();
 		if !self.url_input.is_empty() {
-			let session = Session::new(self.url_input.clone());
+			let mut session = Session::new(self.url_input.clone());
+			session.start();
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);
 			set_status_info(format!("New session to `{}`", name));
@@ -44,7 +45,7 @@ impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
 		// 处理内容
 		if !self.wait_to_remove.is_empty() {
-			for s in self.wait_to_remove.iter() {
+			for s in self.wait_to_remove.iter_mut() {
 				s.remove();
 				self.sessions.remove(&s.get_uid());
 			}
@@ -84,7 +85,7 @@ impl App for DownloadManager {
 							}
 						});
 						ui.horizontal(|ui| {
-							if ui.button("Start").clicked() {
+							if ui.button("Continue").clicked() {
 								session.start();
 							}
 							if ui.button("Pause").clicked() {
