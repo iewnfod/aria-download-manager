@@ -6,11 +6,11 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     const downloadId = downloadItem.id;
     // 获取下载信息
     let downloadData = {
-        downloadId: downloadId,
+        download_id: downloadId,
         size: downloadItem.totalBytes,
-        webpageUrl: downloadItem.url,
-        downloadUrl: downloadItem.finalUrl,
-        resumeState: downloadItem.canResume,
+        webpage_url: downloadItem.url,
+        download_url: downloadItem.finalUrl,
+        resume_state: downloadItem.canResume,
     };
     if (devMode) {
         console.log(downloadData);
@@ -26,9 +26,44 @@ async function removeFromHistory(downloadId) {
     await chrome.downloads.cancel(downloadId).then(pass).catch(handleError);
 }
 
+async function fetchADMState() {
+    try {
+        const response = await fetch('http://127.0.0.1:63319/state', {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            return false;
+        }
+
+        const data = await response.json();
+
+        if (data && data.status === 0) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error fetching ADM state:', error);
+        return false;
+    }
+}
+
+async function getADMState() {
+    try {
+        const result = await fetchADMState();
+        console.log("ADM On State: ", result);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function callADM() { 
+
+}
+
 function sendDataToServer(data) {
     // 发送数据到本地端口
-    fetch('http://localhost:63319', {
+    fetch('http://127.0.0.1:63319/api', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json'
@@ -45,7 +80,7 @@ function sendDataToServer(data) {
     })
         .then(data => {
             if (devMode) { 
-                console.log('Data sent:', data);
+                console.log('Server Responsed:', data);
             }
     })
         .catch(error => {
