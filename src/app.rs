@@ -1,4 +1,4 @@
-use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit}, epaint::ahash::{HashMap, HashMapExt}};
+use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
 use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, set_split_num, get_wait_to_start, clear_wait_to_start}};
 
@@ -103,10 +103,9 @@ impl App for DownloadManager {
 								.text(session.get_speed())
 							);
 						});
-						ui.collapsing("Detailed Information", |ui| {
-							ui.label(
-								session.get_status()
-							);
+						CollapsingHeader::new("Detailed Information").id_source(uid.to_string() + "detail")
+						.show(ui, |ui| {
+							ui.label(session.get_status());
 						});
 					});
 					ui.separator();
