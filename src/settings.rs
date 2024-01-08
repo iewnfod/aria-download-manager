@@ -1,13 +1,14 @@
+#[derive(Debug, Clone)]
 pub struct Settings {
-	pub split_num: String,
-	pub proxy: bool,
+	pub split_num: i32,
+	pub proxy: String,
 }
 
 impl Default for Settings {
 	fn default() -> Self {
 		Self {
-			split_num: String::new(),
-			proxy: false,
+			split_num: 16,
+			proxy: "".to_string(),
 		}
 	}
 }

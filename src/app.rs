@@ -1,6 +1,6 @@
-use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader}, epaint::ahash::{HashMap, HashMapExt}};
+use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
-use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start}, settings::Settings};
+use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings}, settings::Settings};
 
 pub struct DownloadManager {
 	sessions: HashMap<Uuid, Session>,
@@ -28,7 +28,8 @@ impl DownloadManager {
 	}
 
 	fn apply_settings(&self) {
-
+		set_settings(self.settings.clone());
+		set_status_info("Apply Settings".to_string());
 	}
 }
 
@@ -106,6 +107,7 @@ impl App for DownloadManager {
 					});
 					ui.separator();
 				}
+				ui.add_space(ctx.used_size().y);
 			});
 		});
 
@@ -116,8 +118,17 @@ impl App for DownloadManager {
 			});
 			ui.collapsing("Settings", |ui| {
 				ScrollArea::vertical().show(ui, |ui| {
-					ui.add(TextEdit::singleline(&mut self.settings.split_num).hint_text("Section Number"));
-					ui.checkbox(&mut self.settings.proxy, "Use system Proxy");
+					Grid::new("settings")
+					.num_columns(2)
+					.show(ui, |ui| {
+						ui.label("Section Number");
+						ui.add(DragValue::new(&mut self.settings.split_num).clamp_range(1..=64));
+						ui.end_row();
+
+						ui.label("All Proxy Url");
+						ui.text_edit_singleline(&mut self.settings.proxy);
+						ui.end_row();
+					});
 					if ui.button("Apply").clicked() {
 						self.apply_settings();
 					}

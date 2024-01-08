@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use aria2_ws::response::Status;
 use url::Url;
 use uuid::Uuid;
@@ -33,8 +35,16 @@ impl Session {
 				return Err(());
 			}
 		};
-		let segments = parsed_url.path_segments().unwrap();
+		let segments = match parsed_url.path_segments() {
+			Some(s) => s,
+			_ => {
+				set_status_info(format!("Failed to Solve Url `{}`", &url));
+				return Err(());
+			}
+		};
+
 		let name = segments.last().unwrap();
+
 		Ok(
 			Self {
 				uid: Uuid::new_v4(),
@@ -54,7 +64,25 @@ impl Session {
 	}
 
 	pub fn get_name(&self) -> String {
-		self.name.clone()
+		let mut result = self.url.clone();
+		if !self.name.is_empty() {
+			result = self.name.clone();
+		}
+		if !self.status.is_none() {
+			let files = self.status.clone().unwrap().files;
+			let mut results = vec![];
+			for file in files.iter() {
+				if let Some(name_os) = Path::new(&file.path).file_name() {
+					if let Some(name) = name_os.to_str() {
+						results.push(name.to_string());
+					}
+				}
+			}
+			if !results.is_empty() {
+				result = results.join(", ");
+			}
+		}
+		result
 	}
 
 	pub fn get_process(&self) -> f32 {
@@ -63,7 +91,7 @@ impl Session {
 			if status.total_length == 0 {
 				0.0
 			} else {
-				(status.completed_length / status.total_length) as f32
+				status.completed_length as f32 / status.total_length as f32
 			}
 		} else {
 			0.0
@@ -141,13 +169,20 @@ Error Message: {}
 				err_msg = String::new();
 			}
 		}
+
+		let mut files = vec![];
+		for file in status.files {
+			files.push(file.path);
+		}
 		format!("
-Save Path: {}
 Download Url: {}
+Save Dir: {}
+Files: {}
 {}
 			",
-			status.dir,
 			self.url,
+			status.dir,
+			files.join("\n"),
 			err_msg
 		).trim().to_string()
 	}

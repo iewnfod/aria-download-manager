@@ -3,7 +3,7 @@ use std::process::Command;
 use aria2_ws::{Client, response::Status, TaskOptions};
 use futures::executor::block_on;
 
-use crate::data::get_split_num;
+use crate::data::{get_settings, set_status_info};
 
 const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
 static mut ARIA2C_PROCESS: Option<std::process::Child> = None;
@@ -41,12 +41,15 @@ pub fn stop() {
 
 fn get_options() -> TaskOptions {
 	let mut opt = TaskOptions::default();
-	opt.split = Some(get_split_num());
+	let settings = get_settings();
+	opt.split = Some(settings.split_num);
+	opt.all_proxy = Some(settings.proxy.clone());
 	opt.dir = Some(format!("/Users/{}/Downloads", users::get_current_username().unwrap().to_str().unwrap()));
 	opt
 }
 
 pub fn add_uri(url: String) -> String {
+	match
 	block_on(
 		get_client()
 		.add_uri(
@@ -55,7 +58,13 @@ pub fn add_uri(url: String) -> String {
 			None,
 			None
 		)
-	).unwrap()
+	) {
+		Ok(gid) => gid,
+		Err(msg) => {
+			set_status_info(format!("{}", msg));
+			String::new()
+		},
+	}
 }
 
 pub fn remove(gid: String) {
