@@ -3,7 +3,6 @@ const pass = () => null;
 const handleError = (error) => console.log(`Error: ${error}`);
 
 chrome.downloads.onCreated.addListener(function (downloadItem) {
-    console.log("Download filename:", filename);
     const downloadId = downloadItem.id;
     // 获取下载信息
     let downloadData = {
@@ -15,6 +14,7 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     };
     if (devMode) {
         console.log(downloadData);
+        console.log(JSON.stringify(downloadData))
     }
     // 发送数据到本地端口
     removeFromHistory(downloadId);
