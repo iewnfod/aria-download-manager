@@ -19,7 +19,7 @@ async fn index(info: web::Json<Info>) -> actix_web::Result<String> {
 }
 
 async fn state() -> actix_web::Result<String> {
-	Ok("{status: 0}".to_string())
+    Ok("{\"status\": 0}".to_string())
 }
 
 pub async fn listen() {
