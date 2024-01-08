@@ -7,7 +7,6 @@ pub struct DownloadManager {
 	url_input: String,
 	info: String,
 	wait_to_remove: Vec<Session>,
-	split_num_input: String,
 }
 
 impl DownloadManager {
@@ -23,10 +22,6 @@ impl DownloadManager {
 			set_status_info("Target url cannot be empty".to_string());
 		}
 	}
-
-	fn update_setting(&self) {
-		set_split_num(self.split_num_input.clone());
-	}
 }
 
 impl Default for DownloadManager {
@@ -36,7 +31,6 @@ impl Default for DownloadManager {
 			url_input: String::new(),
 			info: String::new(),
 			wait_to_remove: vec![],
-			split_num_input: String::new(),
 		}
 	}
 }
@@ -68,13 +62,6 @@ impl App for DownloadManager {
 				ui.add(TextEdit::singleline(&mut self.url_input).hint_text("Target Url"));
 				if ui.button("New Session").clicked() {
 					self.new_session();
-				}
-			});
-			ui.add_space(5.0);
-			ui.horizontal(|ui| {
-				ui.add(TextEdit::singleline(&mut self.split_num_input).hint_text("Split Number (16)"));
-				if ui.button("Apply").clicked() {
-					self.update_setting()
 				}
 			});
 			ui.add_space(5.0);
