@@ -1,4 +1,5 @@
 use aria2_ws::response::Status;
+use url::Url;
 use uuid::Uuid;
 
 use crate::{aria2c, data::set_status_info};
@@ -20,10 +21,14 @@ pub struct Session {
 	status: Option<Status>,
 	update_time: usize,
 	running: bool,
+	name: String,
 }
 
 impl Session {
 	pub fn new(url: String) -> Self {
+		let parsed_url = Url::parse(&url).unwrap();
+		let segments = parsed_url.path_segments().unwrap();
+		let name = segments.last().unwrap();
 		Self {
 			uid: Uuid::new_v4(),
 			gid: String::new(),
@@ -32,6 +37,7 @@ impl Session {
 			status: None,
 			update_time: 0,
 			running: false,
+			name: name.to_string(),
 		}
 	}
 
@@ -40,7 +46,7 @@ impl Session {
 	}
 
 	pub fn get_name(&self) -> String {
-		self.url.clone()
+		self.name.clone()
 	}
 
 	pub fn get_process(&self) -> f32 {

@@ -42,6 +42,7 @@ pub fn stop() {
 fn get_options() -> TaskOptions {
 	let mut opt = TaskOptions::default();
 	opt.split = Some(get_split_num());
+	opt.dir = Some(format!("/Users/{}/Downloads", users::get_current_username().unwrap().to_str().unwrap()));
 	opt
 }
 
