@@ -1,6 +1,6 @@
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
-use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, set_split_num}};
+use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, set_split_num, get_wait_to_start, clear_wait_to_start}};
 
 pub struct DownloadManager {
 	sessions: HashMap<Uuid, Session>,
@@ -51,6 +51,13 @@ impl App for DownloadManager {
 			}
 			self.wait_to_remove.clear();
 		}
+		// 读取待添加的任务
+		let wait_to_start = get_wait_to_start();
+		for u in wait_to_start.iter() {
+			self.url_input = u.to_string();
+			self.new_session();
+		}
+		clear_wait_to_start();
 		// 获取状态栏数据
 		self.info = get_status_info();
 

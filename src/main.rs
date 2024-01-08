@@ -4,11 +4,14 @@ mod app;
 mod session;
 mod aria2c;
 mod data;
+mod server;
 
 #[tokio::main]
 async fn main() {
     // 启动 aria2c 服务
     aria2c::startup();
+    // 启用监听服务
+    tokio::spawn(server::listen());
     // 应用设置
     let options = NativeOptions {
         viewport: ViewportBuilder::default().with_inner_size(vec2(600.0, 350.0)),
