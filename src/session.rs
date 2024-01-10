@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, time::Instant};
 
 use aria2_ws::response::Status;
 use url::Url;
@@ -21,7 +21,8 @@ pub struct Session {
 	url: String,
 	started: bool,
 	status: Option<Status>,
-	update_time: usize,
+	update_time: Instant,
+	update_frequency: u128,
 	running: bool,
 	name: String,
 }
@@ -45,18 +46,17 @@ impl Session {
 
 		let name = segments.last().unwrap();
 
-		Ok(
-			Self {
-				uid: Uuid::new_v4(),
-				gid: String::new(),
-				url,
-				started: false,
-				status: None,
-				update_time: 0,
-				running: false,
-				name: name.to_string(),
-			}
-		)
+		Ok(Self {
+			uid: Uuid::new_v4(),
+			gid: String::new(),
+			url,
+			started: false,
+			status: None,
+			update_time: Instant::now(),
+			update_frequency: 100,
+			running: false,
+			name: name.to_string(),
+		})
 	}
 
 	pub fn get_uid(&self) -> Uuid {
@@ -146,11 +146,27 @@ impl Session {
 
 	pub fn update_status(&mut self) {
 		if !self.gid.is_empty() {
-			self.update_time += 1;
-			if self.update_time == 100 {
-				self.status = Some(aria2c::get_status(self.gid.clone()));
-				self.update_time = 0;
+			if self.update_time.elapsed().as_millis() > self.update_frequency {
+				aria2c::get_status(self.gid.clone(), self);
+				// self.status = Some(aria2c::get_status(self.gid.clone()));
+				self.update_time = Instant::now();
 			}
+		}
+	}
+
+	pub fn update_status_handler(&mut self, new_status: Status) {
+		self.status = Some(new_status);
+	}
+
+	pub fn is_completed(&self) -> bool {
+		if let Some(status) = self.status.clone() {
+			if self.started {
+				status.completed_length == status.total_length && status.completed_length != 0
+			} else {
+				false
+			}
+		} else {
+			false
 		}
 	}
 
@@ -178,11 +194,14 @@ Error Message: {}
 Download Url: {}
 Save Dir: {}
 Files: {}
+Completed: {}% ( {} / {} )
 {}
 			",
 			self.url,
 			status.dir,
 			files.join("\n"),
+			status.completed_length as f32 / status.total_length as f32 * 100.0,
+			status.completed_length, status.total_length,
 			err_msg
 		).trim().to_string()
 	}

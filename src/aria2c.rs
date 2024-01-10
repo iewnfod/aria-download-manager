@@ -1,9 +1,9 @@
-use std::process::Command;
+use std::{process::Command, thread};
 
-use aria2_ws::{Client, response::Status, TaskOptions};
+use aria2_ws::{Client, TaskOptions};
 use futures::executor::block_on;
 
-use crate::data::{get_settings, set_status_info};
+use crate::{data::{get_settings, set_status_info}, session::Session};
 
 const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
 static mut ARIA2C_PROCESS: Option<std::process::Child> = None;
@@ -13,11 +13,15 @@ static mut CLIENT: Option<Client> = None;
 fn get_client() -> Client {
 	unsafe {
 		while CLIENT.is_none() {
-			CLIENT = Some(
-				block_on(
-					Client::connect(SERVER_URL, None)
-				).unwrap()
-			);
+			CLIENT = match block_on(
+				Client::connect(SERVER_URL, None)
+			) {
+				Ok(c) => Some(c),
+				Err(_e) => {
+					// set_status_info(format!("Connect Error: {:?}", e));
+					None
+				}
+			};
 		}
 		CLIENT.clone().unwrap()
 	}
@@ -98,10 +102,18 @@ pub fn unpause(gid: String) {
 	}
 }
 
-pub fn get_status(gid: String) -> Status {
-	let result = block_on(
+fn _get_status(gid: String, target_session: &mut Session) {
+	let status = block_on(
 		get_client()
-		.tell_status(gid.as_str())
+		.tell_status(&gid)
 	).unwrap();
-	result
+	target_session.update_status_handler(status);
+}
+
+pub fn get_status(gid: String, target_session: &mut Session) {
+	thread::scope(|s| {
+		s.spawn(|| {
+			_get_status(gid, target_session);
+		});
+	});
 }

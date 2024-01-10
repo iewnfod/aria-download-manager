@@ -84,6 +84,9 @@ impl App for DownloadManager {
 					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
 						ui.horizontal(|ui| {
 							ui.label(session.get_name());
+							if session.is_completed() {
+								ui.label("(Completed!)".to_string());
+							}
 							if ui.button("Remove").clicked() {
 								self.wait_to_remove.push(session.clone());
 							}
@@ -121,7 +124,7 @@ impl App for DownloadManager {
 					Grid::new("settings")
 					.num_columns(2)
 					.show(ui, |ui| {
-						ui.label("Section Number");
+						ui.label("Connection Number");
 						ui.add(DragValue::new(&mut self.settings.split_num).clamp_range(1..=64));
 						ui.end_row();
 
@@ -139,6 +142,9 @@ impl App for DownloadManager {
 	}
 
 	fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+		for (_uid, session) in self.sessions.iter_mut()  {
+			session.remove();
+		}
 		aria2c::stop();
 	}
 }
