@@ -52,9 +52,8 @@ fn get_options() -> TaskOptions {
 	opt
 }
 
-pub fn add_uri(url: String) -> String {
-	match
-	block_on(
+pub fn add_uri(url: String, target_session: &mut Session) {
+	let gid = match block_on(
 		get_client()
 		.add_uri(
 			vec![url],
@@ -67,53 +66,53 @@ pub fn add_uri(url: String) -> String {
 		Err(msg) => {
 			set_status_info(format!("{}", msg));
 			String::new()
-		},
-	}
+		}
+	};
+	target_session.start_handler(gid);
 }
 
 pub fn remove(gid: String) {
 	pause(gid.clone());
-	match block_on(
-		get_client()
-		.remove(gid.as_str())
-	) {
-		Ok(_) => (),
-		Err(_) => (),
-	}
+	thread::scope(|s| {
+		s.spawn(|| {
+			let _ = block_on(
+				get_client()
+				.remove(&gid)
+			);
+		});
+	});
 }
 
 pub fn pause(gid: String) {
-	match block_on(
-		get_client()
-		.pause(gid.as_str())
-	) {
-		Ok(_) => (),
-		Err(_) => (),
-	}
+	thread::scope(|s| {
+		s.spawn(|| {
+			let _ = block_on(
+				get_client()
+				.pause(&gid)
+			);
+		});
+	});
 }
 
 pub fn unpause(gid: String) {
-	match block_on(
-		get_client()
-		.unpause(gid.as_str())
-	) {
-		Ok(_) => (),
-		Err(_) => (),
-	}
-}
-
-fn _get_status(gid: String, target_session: &mut Session) {
-	let status = block_on(
-		get_client()
-		.tell_status(&gid)
-	).unwrap();
-	target_session.update_status_handler(status);
+	thread::scope(|s| {
+		s.spawn(|| {
+			let _ = block_on(
+				get_client()
+				.unpause(&gid)
+			);
+		});
+	});
 }
 
 pub fn get_status(gid: String, target_session: &mut Session) {
 	thread::scope(|s| {
 		s.spawn(|| {
-			_get_status(gid, target_session);
+			let status = block_on(
+				get_client()
+				.tell_status(&gid)
+			).unwrap();
+			target_session.update_status_handler(status);
 		});
 	});
 }

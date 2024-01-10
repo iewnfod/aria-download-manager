@@ -116,14 +116,18 @@ impl Session {
 	pub fn start(&mut self) {
 		if !self.running {
 			if !self.started {
-				self.gid = aria2c::add_uri(self.url.clone());
-				self.started = true;
-				self.running = true;
-				set_status_info(format!("Start `{}`", self.get_name()));
+				aria2c::add_uri(self.url.clone(), self);
 			} else {
 				self.unpause();
 			}
 		}
+	}
+
+	pub fn start_handler(&mut self, gid: String) {
+		self.gid = gid;
+		self.started = true;
+		self.running = true;
+		set_status_info(format!("Start `{}`", self.get_name()));
 	}
 
 	pub fn remove(&mut self) {
