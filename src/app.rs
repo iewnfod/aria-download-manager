@@ -1,3 +1,4 @@
+
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
 use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings}, settings::Settings};
@@ -84,9 +85,6 @@ impl App for DownloadManager {
 					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
 						ui.horizontal(|ui| {
 							ui.label(session.get_name());
-							if session.is_completed() {
-								ui.label("(Completed!)".to_string());
-							}
 							if ui.button("Remove").clicked() {
 								self.wait_to_remove.push(session.clone());
 							}

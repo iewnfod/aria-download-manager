@@ -99,7 +99,10 @@ impl Session {
 	}
 
 	pub fn get_speed(&self) -> String {
-		if self.started && !self.status.is_none() {
+		if self.is_completed() {
+			return "Completed!".to_string();
+		}
+		if self.started && !self.status.is_none() && self.running {
 			let speed = self.status.clone().unwrap().download_speed;
 			let mut result_speed = speed as f32;
 			let mut unit_index = 0;
@@ -109,7 +112,7 @@ impl Session {
 			}
 			result_speed.to_string() + UNITS[unit_index]
 		} else {
-			0.0.to_string()
+			"0.0B/s".to_string()
 		}
 	}
 
