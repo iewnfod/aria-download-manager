@@ -1,3 +1,4 @@
+use std::time::Duration;
 
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
@@ -65,6 +66,8 @@ impl App for DownloadManager {
 		clear_wait_to_start();
 		// 获取状态栏数据
 		self.info = get_status_info();
+		// 判断是否需要刷新
+		let mut all_finished = true;
 
 		// 绘制 ui
 		TopBottomPanel::top(Id::new("top")).show(ctx, |ui| {
@@ -82,6 +85,9 @@ impl App for DownloadManager {
 			ScrollArea::vertical().show(ui, |ui| {
 				for (uid, session) in self.sessions.iter_mut() {
 					session.update_status();
+					if !session.is_completed() {
+						all_finished = false;
+					}
 					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
 						ui.horizontal(|ui| {
 							ui.label(session.get_name());
@@ -137,6 +143,13 @@ impl App for DownloadManager {
 			});
 			ui.add_space(5.0);
 		});
+
+		// 如果还有在下载的东西，那就刷新页面
+		if !all_finished {
+			ctx.request_repaint();
+		} else {
+			ctx.request_repaint_after(Duration::from_secs(1));
+		}
 	}
 
 	fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {

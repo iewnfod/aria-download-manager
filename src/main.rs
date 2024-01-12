@@ -1,6 +1,6 @@
 use std::thread;
 
-use eframe::{egui::ViewportBuilder, NativeOptions, epaint::vec2, run_native};
+use eframe::{NativeOptions, epaint::vec2, run_native};
 
 mod app;
 mod session;
@@ -19,7 +19,7 @@ async fn main() {
     tokio::spawn(server::listen());
     // 应用设置
     let options = NativeOptions {
-        viewport: ViewportBuilder::default().with_inner_size(vec2(600.0, 350.0)),
+        initial_window_size: Some(vec2(600.0, 350.0)),
         ..Default::default()
     };
     // 运行应用

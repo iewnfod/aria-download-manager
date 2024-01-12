@@ -16,7 +16,7 @@ strip = true
 [dependencies]
 actix-web = "4.4.1"
 aria2-ws = "0.4.0"
-eframe = "0.24.1"
+eframe = "0.22.0"
 env_proxy = "0.4.1"
 futures = "0.3.30"
 serde = { version = "1.0.195", features = ["derive"] }
