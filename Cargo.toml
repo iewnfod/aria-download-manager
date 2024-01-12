@@ -2,6 +2,14 @@
 name = "aria-download-manager"
 version = "0.1.0"
 edition = "2021"
+authors = ["Iewnfod"]
+description = "A download manager based on aria2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 'z'
+strip = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

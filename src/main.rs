@@ -1,3 +1,5 @@
+use std::thread;
+
 use eframe::{egui::ViewportBuilder, NativeOptions, epaint::vec2, run_native};
 
 mod app;
@@ -10,7 +12,9 @@ mod settings;
 #[tokio::main]
 async fn main() {
     // 启动 aria2c 服务
-    aria2c::startup();
+    thread::spawn(|| {
+        aria2c::startup();
+    });
     // 启用监听服务
     tokio::spawn(server::listen());
     // 应用设置
