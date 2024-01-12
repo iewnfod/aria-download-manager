@@ -2,8 +2,8 @@
 
 set -e
 
-
 MACOS_BIN_NAME=aria-download-manager
+MACOS_TRAY_NAME=adm-tray
 MACOS_APP_NAME=Aria\ Download\ Manager
 MACOS_APP_DIR=target/$MACOS_APP_NAME.app
 
@@ -11,13 +11,15 @@ echo "Creating app directory structure"
 rm -rf "$MACOS_APP_DIR"
 mkdir -p "$MACOS_APP_DIR/Contents/MacOS"
 
-cargo build \
-    --verbose \
-    --release \
-
-echo "Copying binary"
+echo "Building and copying main binary"
+cargo build --release
 MACOS_APP_BIN=$MACOS_APP_DIR/Contents/MacOS/$MACOS_BIN_NAME
 cp "target/release/$MACOS_BIN_NAME" "$MACOS_APP_BIN"
+
+echo "Building and copying tray binary"
+/bin/bash scripts/build-tray.sh
+MACOS_APP_TRAY_BIN=$MACOS_APP_DIR/Contents/MacOS/$MACOS_TRAY_NAME
+cp "../$MACOS_TRAY_NAME/target/release/$MACOS_TRAY_NAME" "$MACOS_APP_TRAY_BIN"
 
 echo "Linking binary with frameworks"
 for old in `otool -L "$MACOS_APP_BIN" | grep @rpath | cut -f2 | cut -d' ' -f1`; do
