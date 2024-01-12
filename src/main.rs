@@ -1,4 +1,5 @@
 use eframe::{NativeOptions, epaint::vec2, run_native, IconData};
+use image::DynamicImage;
 
 mod app;
 mod session;
@@ -13,16 +14,22 @@ async fn main() {
     tokio::spawn(server::listen());
     // 应用设置
     // 图标
-    let icon = image::open("assets/icon.iconset/icon_512x512.png").unwrap().to_rgba8();
-    let (icon_width, icon_height) = icon.dimensions();
+    let icon_source: Option<DynamicImage> = match image::open("assets/icon.iconset/icon_512x512.png") {
+        Ok(icon) => Some(icon),
+        Err(_) => None,
+    };
+    let icon_data = match icon_source {
+        Some(icon) => Some(IconData {
+            rgba: icon.to_rgba8().into_raw(),
+            width: icon.width(),
+            height: icon.height(),
+        }),
+        None => None,
+    };
 
     let options = NativeOptions {
         initial_window_size: Some(vec2(600.0, 350.0)),
-        icon_data: Some(IconData {
-            rgba: icon.into_raw(),
-            width: icon_width,
-            height: icon_height,
-        }),
+        icon_data: icon_data,
         ..Default::default()
     };
     // 运行应用
