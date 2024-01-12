@@ -9,20 +9,20 @@ const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
 
 static mut CLIENT: Option<Client> = None;
 
-fn get_client() -> Client {
+fn get_client() -> Option<Client> {
 	unsafe {
-		while CLIENT.is_none() {
+		if CLIENT.is_none() {
 			CLIENT = match block_on(
 				Client::connect(SERVER_URL, None)
 			) {
 				Ok(c) => Some(c),
-				Err(_e) => {
-					// set_status_info(format!("Connect Error: {:?}", e));
+				Err(e) => {
+					set_status_info(format!("Connection Error: {:?}", e.to_string()));
 					None
 				}
 			};
 		}
-		CLIENT.clone().unwrap()
+		CLIENT.clone()
 	}
 }
 
@@ -36,8 +36,11 @@ fn get_options() -> TaskOptions {
 }
 
 pub fn add_uri(url: String, target_session: &mut Session) {
+	if get_client().is_none() {
+		return;
+	}
 	let gid = match block_on(
-		get_client()
+		get_client().unwrap()
 		.add_uri(
 			vec![url],
 			Some(get_options()),
@@ -55,11 +58,14 @@ pub fn add_uri(url: String, target_session: &mut Session) {
 }
 
 pub fn remove(gid: String) {
+	if get_client().is_none() {
+		return;
+	}
 	pause(gid.clone());
 	thread::scope(|s| {
 		s.spawn(|| {
 			let _ = block_on(
-				get_client()
+				get_client().unwrap()
 				.remove(&gid)
 			);
 		});
@@ -67,10 +73,13 @@ pub fn remove(gid: String) {
 }
 
 pub fn pause(gid: String) {
+	if get_client().is_none() {
+		return;
+	}
 	thread::scope(|s| {
 		s.spawn(|| {
 			let _ = block_on(
-				get_client()
+				get_client().unwrap()
 				.pause(&gid)
 			);
 		});
@@ -78,10 +87,13 @@ pub fn pause(gid: String) {
 }
 
 pub fn unpause(gid: String) {
+	if get_client().is_none() {
+		return;
+	}
 	thread::scope(|s| {
 		s.spawn(|| {
 			let _ = block_on(
-				get_client()
+				get_client().unwrap()
 				.unpause(&gid)
 			);
 		});
@@ -89,10 +101,13 @@ pub fn unpause(gid: String) {
 }
 
 pub fn get_status(gid: String, target_session: &mut Session) {
+	if get_client().is_none() {
+		return;
+	}
 	thread::scope(|s| {
 		s.spawn(|| {
 			let status = block_on(
-				get_client()
+				get_client().unwrap()
 				.tell_status(&gid)
 			).unwrap();
 			target_session.update_status_handler(status);
