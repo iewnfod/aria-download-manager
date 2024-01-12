@@ -1,20 +1,14 @@
-use std::thread;
-
 use eframe::{NativeOptions, epaint::vec2, run_native};
 
 mod app;
 mod session;
-mod aria2c;
 mod data;
 mod server;
 mod settings;
+mod aria2c;
 
 #[tokio::main]
 async fn main() {
-    // 启动 aria2c 服务
-    thread::spawn(|| {
-        aria2c::startup();
-    });
     // 启用监听服务
     tokio::spawn(server::listen());
     // 应用设置

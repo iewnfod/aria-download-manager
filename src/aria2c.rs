@@ -1,4 +1,4 @@
-use std::{process::Command, thread};
+use std::thread;
 
 use aria2_ws::{Client, TaskOptions};
 use futures::executor::block_on;
@@ -6,7 +6,6 @@ use futures::executor::block_on;
 use crate::{data::{get_settings, set_status_info}, session::Session};
 
 const SERVER_URL: &str = "ws://127.0.0.1:6800/jsonrpc";
-static mut ARIA2C_PROCESS: Option<std::process::Child> = None;
 
 static mut CLIENT: Option<Client> = None;
 
@@ -24,22 +23,6 @@ fn get_client() -> Client {
 			};
 		}
 		CLIENT.clone().unwrap()
-	}
-}
-
-pub fn startup() {
-	let mut cmd = Command::new("aria2c");
-	cmd.arg("--enable-rpc");
-	let process = cmd.spawn().unwrap();
-	unsafe { ARIA2C_PROCESS = Some(process) };
-}
-
-pub fn stop() {
-	println!("Stop Aria2c");
-	unsafe {
-		if let Some(process) = &mut ARIA2C_PROCESS {
-			process.kill().unwrap();
-		}
 	}
 }
 

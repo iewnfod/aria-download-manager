@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
 use uuid::Uuid;
-use crate::{session::Session, aria2c, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings}, settings::Settings};
+use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings};
 
 pub struct DownloadManager {
 	sessions: HashMap<Uuid, Session>,
@@ -48,7 +48,11 @@ impl Default for DownloadManager {
 }
 
 impl App for DownloadManager {
-	fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
+		// 判断是否需要退出
+		if get_quit_request() {
+			frame.close();
+		}
 		// 处理内容
 		if !self.wait_to_remove.is_empty() {
 			for s in self.wait_to_remove.iter_mut() {
@@ -156,6 +160,5 @@ impl App for DownloadManager {
 		for (_uid, session) in self.sessions.iter_mut()  {
 			session.remove();
 		}
-		aria2c::stop();
 	}
 }

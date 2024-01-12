@@ -2,6 +2,7 @@ use crate::settings::Settings;
 
 static mut STATUS_INFO: String = String::new();
 static mut WAIT_TO_START: Vec<String> = vec![];
+static mut QUIT_REQUEST: bool = false;
 
 static mut SETTINGS: Option<Settings> = None;
 
@@ -48,5 +49,17 @@ pub fn get_wait_to_start() -> Vec<String> {
 pub fn clear_wait_to_start() {
 	unsafe {
 		WAIT_TO_START = vec![];
+	}
+}
+
+pub fn get_quit_request() -> bool {
+	unsafe {
+		QUIT_REQUEST
+	}
+}
+
+pub fn set_quit_request(q: bool) {
+	unsafe {
+		QUIT_REQUEST = q;
 	}
 }
