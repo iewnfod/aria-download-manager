@@ -35,7 +35,7 @@ pub async fn listen() {
 			.route("/state", web::get().to(state))
 			.route("/quit", web::get().to(quit_handler))
 	})
-	.bind("127.0.0.1:63319").unwrap()
+	.bind("127.0.0.1:63318").unwrap()
 	.run().await
 	.unwrap();
 }
