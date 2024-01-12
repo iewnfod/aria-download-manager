@@ -33,6 +33,12 @@ impl DownloadManager {
 		set_settings(self.settings.clone());
 		set_status_info("Apply Settings".to_string());
 	}
+
+	fn remove_all(&mut self) {
+		for (_uid, session) in self.sessions.iter_mut() {
+			session.remove();
+		}
+	}
 }
 
 impl Default for DownloadManager {
@@ -51,6 +57,7 @@ impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
 		// 判断是否需要退出
 		if get_quit_request() {
+			self.remove_all();
 			frame.close();
 		}
 		// 处理内容
@@ -157,8 +164,6 @@ impl App for DownloadManager {
 	}
 
 	fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
-		for (_uid, session) in self.sessions.iter_mut()  {
-			session.remove();
-		}
+		println!("Quit");
 	}
 }
