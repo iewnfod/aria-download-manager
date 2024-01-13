@@ -15,7 +15,7 @@ pub fn set_settings(new_settings: Settings) {
 pub fn get_settings() -> Settings {
 	unsafe {
 		if SETTINGS.is_none() {
-			Settings::default()
+			Settings::new()
 		} else {
 			SETTINGS.clone().unwrap()
 		}

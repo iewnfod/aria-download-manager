@@ -1,6 +1,7 @@
 use std::thread;
 
 use aria2_ws::{Client, TaskOptions};
+use eframe::epaint::ahash::HashMap;
 use futures::executor::block_on;
 
 use crate::{data::{get_settings, set_status_info}, session::Session};
@@ -30,7 +31,9 @@ fn get_options() -> TaskOptions {
 	let mut opt = TaskOptions::default();
 	let settings = get_settings();
 	opt.split = Some(settings.split_num);
-	opt.all_proxy = Some(settings.proxy.clone());
+	if !settings.proxy.is_empty() {
+		opt.all_proxy = Some(settings.proxy.clone());
+	}
 	opt.dir = Some(format!("/Users/{}/Downloads", users::get_current_username().unwrap().to_str().unwrap()));
 	opt
 }
@@ -111,6 +114,28 @@ pub fn get_status(gid: String, target_session: &mut Session) {
 				.tell_status(&gid)
 			).unwrap();
 			target_session.update_status_handler(status);
+		});
+	});
+}
+
+pub fn get_active(sessions: &mut HashMap<String, Session>) {
+	if get_client().is_none() {
+		return;
+	}
+	thread::scope(|s| {
+		s.spawn(|| {
+			let active = block_on(
+				get_client().unwrap()
+				.tell_active()
+			).unwrap();
+			for status in active {
+				if !sessions.contains_key(&status.gid) {
+					let url = status.files[0].uris[0].clone().uri;
+					let mut session = Session::new(url).unwrap();
+					session.start_handler(status.gid.clone());
+					sessions.insert(session.get_uid(), session);
+				}
+			}
 		});
 	});
 }

@@ -16,10 +16,9 @@ const UNITS: [&str; 5] = [
 
 #[derive(Debug, Clone)]
 pub struct Session {
-	uid: Uuid,
+	uid: String,
 	gid: String,
 	url: String,
-	started: bool,
 	status: Option<Status>,
 	update_time: Instant,
 	update_frequency: u128,
@@ -47,10 +46,9 @@ impl Session {
 		let name = segments.last().unwrap();
 
 		Ok(Self {
-			uid: Uuid::new_v4(),
+			uid: Uuid::new_v4().to_string(),
 			gid: String::new(),
 			url,
-			started: false,
 			status: None,
 			update_time: Instant::now(),
 			update_frequency: 100,
@@ -59,8 +57,8 @@ impl Session {
 		})
 	}
 
-	pub fn get_uid(&self) -> Uuid {
-		self.uid
+	pub fn get_uid(&self) -> String {
+		self.uid.clone()
 	}
 
 	pub fn get_name(&self) -> String {
@@ -86,7 +84,7 @@ impl Session {
 	}
 
 	pub fn get_process(&self) -> f32 {
-		if self.started && !self.status.is_none() {
+		if !self.gid.is_empty() && !self.status.is_none() {
 			let status = self.status.clone().unwrap();
 			if status.total_length == 0 {
 				0.0
@@ -102,7 +100,7 @@ impl Session {
 		if self.is_completed() {
 			return "Completed!".to_string();
 		}
-		if self.started && !self.status.is_none() && self.running {
+		if !self.gid.is_empty() && !self.status.is_none() && self.running {
 			let speed = self.status.clone().unwrap().download_speed;
 			let mut result_speed = speed as f32;
 			let mut unit_index = 0;
@@ -118,7 +116,7 @@ impl Session {
 
 	pub fn start(&mut self) {
 		if !self.running {
-			if !self.started {
+			if self.gid.is_empty() {
 				aria2c::add_uri(self.url.clone(), self);
 			} else {
 				self.unpause();
@@ -127,8 +125,8 @@ impl Session {
 	}
 
 	pub fn start_handler(&mut self, gid: String) {
-		self.gid = gid;
-		self.started = true;
+		self.gid = gid.clone();
+		self.uid = gid.clone();
 		self.running = true;
 		set_status_info(format!("Start `{}`", self.get_name()));
 	}
@@ -167,7 +165,7 @@ impl Session {
 
 	pub fn is_completed(&self) -> bool {
 		if let Some(status) = self.status.clone() {
-			if self.started {
+			if !self.gid.is_empty() {
 				status.completed_length == status.total_length && status.completed_length != 0
 			} else {
 				false

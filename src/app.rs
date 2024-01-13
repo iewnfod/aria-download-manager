@@ -1,11 +1,10 @@
 use std::time::Duration;
 
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
-use uuid::Uuid;
-use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings};
+use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c};
 
 pub struct DownloadManager {
-	sessions: HashMap<Uuid, Session>,
+	sessions: HashMap<String, Session>,
 	url_input: String,
 	info: String,
 	wait_to_remove: Vec<Session>,
@@ -30,7 +29,11 @@ impl DownloadManager {
 	}
 
 	fn apply_settings(&self) {
+		// 同步设置
 		set_settings(self.settings.clone());
+		// 保存设置
+		self.settings.save();
+		// 提示信息
 		set_status_info("Apply Settings".to_string());
 	}
 
@@ -48,13 +51,15 @@ impl Default for DownloadManager {
 			url_input: String::new(),
 			info: String::new(),
 			wait_to_remove: vec![],
-			settings: Settings::default(),
+			settings: Settings::new(),
 		}
 	}
 }
 
 impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
+		// 更新 sessions
+		aria2c::get_active(&mut self.sessions);
 		// 判断是否需要退出
 		if get_quit_request() {
 			println!("Quit");
