@@ -1,5 +1,7 @@
 let devMode = true;
 let shouldSendToServer = true;
+const pass = () => null;
+const handleError = (error) => console.log(`Error: ${error}`);
 
 // 初始图标路径
 const defaultIconPath = {
