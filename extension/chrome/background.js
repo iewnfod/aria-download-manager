@@ -1,8 +1,41 @@
 let devMode = true;
-const pass = () => null;
-const handleError = (error) => console.log(`Error: ${error}`);
+let shouldSendToServer = true;
+
+// 初始图标路径
+const defaultIconPath = {
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png"
+};
+
+// 暂停时的图标路径
+const pauseIconPath = {
+    "16": "img/pause_icon16.png",
+    "48": "img/pause_icon48.png",
+    "128": "img/pause_icon128.png"
+};
+
+// 设置初始图标
+chrome.action.setIcon({ path: defaultIconPath });
+
+chrome.runtime.onInstalled.addListener(function () {
+    // 在插件安装时添加点击事件监听器
+    chrome.action.onClicked.addListener(function (tab) {
+        shouldSendToServer = !shouldSendToServer;
+        console.log("Sending to server: ", shouldSendToServer);
+
+        // 根据状态切换图标
+        const newIconPath = shouldSendToServer ? defaultIconPath : pauseIconPath;
+        chrome.action.setIcon({ path: newIconPath });
+    });
+});
 
 chrome.downloads.onCreated.addListener(function (downloadItem) {
+    if (!shouldSendToServer) {
+        console.log("Download information will not be sent to the server.");
+        return;
+    }
+
     const downloadId = downloadItem.id;
     // 获取下载信息
     let downloadData = {
@@ -14,7 +47,7 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     };
     if (devMode) {
         console.log(downloadData);
-        console.log(JSON.stringify(downloadData))
+        console.log(JSON.stringify(downloadData));
     }
     // 发送数据到本地端口
     removeFromHistory(downloadId);

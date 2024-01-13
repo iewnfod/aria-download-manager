@@ -1,7 +1,9 @@
 {
     "action": {
         "default_icon": {
-            "16": "img/icon16.png"
+            "16": "img/icon16.png",
+            "48": "img/icon48.png",
+            "128": "img/icon128.png"
         }
     },
     "author": "CreatechStudio Shanghai Inc.",
@@ -10,11 +12,11 @@
     },
     "description": "Sends Download Links to Aria Download Manager",
     "homepage_url": "https://github.com/iewnfod/aria-download-manager",
-    "host_permissions": [ "\u003Call_urls>" ],
+    "host_permissions": [ "<all_urls>" ],
     "icons": {
-        "128": "img/icon128.png",
         "16": "img/icon16.png",
-        "48": "img/icon48.png"
+        "48": "img/icon48.png",
+        "128": "img/icon128.png"
     },
     "manifest_version": 3,
     "name": "AriaDownloadManager Extension",
@@ -26,8 +28,10 @@
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
     },
-    "web_accessible_resources": [ {
-        "matches": [ "\u003Call_urls>" ],
-        "resources": [ "img/icon16.png", "img/icon16_2x.png", "img/close16.png", "img/close16_2x.png" ]
-    } ]
+    "web_accessible_resources": [ 
+        {
+            "matches": [ "<all_urls>" ],
+            "resources": [ "img/icon16.png", "img/icon48.png", "img/icon128.png", "img/pause_icon16.png", "img/pause_icon48.png", "img/pause_icon128.png" ]
+        }
+    ]
 }
