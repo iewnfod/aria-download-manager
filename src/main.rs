@@ -7,6 +7,7 @@ mod data;
 mod server;
 mod settings;
 mod aria2c;
+mod history;
 
 #[tokio::main]
 async fn main() {

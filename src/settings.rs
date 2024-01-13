@@ -6,14 +6,17 @@ use users::os::unix::UserExt;
 const BUNDLE_ID: &str = "com.iewnfod.ariadownloadmanager";
 const SETTINGS_FILE: &str = "settings.json";
 
-fn get_save_path() -> PathBuf {
+pub fn get_app_support_path() -> PathBuf {
 	let user = users::get_user_by_uid(users::get_current_uid()).unwrap();
 	let path = user.home_dir();
 	path.join("Library")
 		.join("Application Support")
 		.join(BUNDLE_ID)
+}
+
+fn get_save_path() -> PathBuf {
+	get_app_support_path()
 		.join(SETTINGS_FILE)
-		.to_path_buf()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

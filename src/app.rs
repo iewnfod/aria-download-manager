@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
-use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c};
+use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c, history::History};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -9,6 +9,8 @@ pub struct DownloadManager {
 	info: String,
 	wait_to_remove: Vec<Session>,
 	settings: Settings,
+	show_history: bool,
+	history_sessions: History,
 }
 
 impl DownloadManager {
@@ -52,6 +54,8 @@ impl Default for DownloadManager {
 			info: String::new(),
 			wait_to_remove: vec![],
 			settings: Settings::new(),
+			show_history: false,
+			history_sessions: History::new(),
 		}
 	}
 }
@@ -94,6 +98,7 @@ impl App for DownloadManager {
 				if ui.button("New Session").clicked() {
 					self.new_session();
 				}
+				ui.checkbox(&mut self.show_history, "Show History");
 			});
 			ui.add_space(5.0);
 		});
@@ -102,6 +107,7 @@ impl App for DownloadManager {
 			ScrollArea::vertical().show(ui, |ui| {
 				for (uid, session) in self.sessions.iter_mut() {
 					session.update_status();
+					self.history_sessions.add_session(session.clone());
 					if !session.is_completed() {
 						all_finished = false;
 					}
@@ -130,12 +136,30 @@ impl App for DownloadManager {
 								.text(session.get_speed())
 							);
 						});
-						CollapsingHeader::new("Detailed Information").id_source(uid.to_string() + "detail")
+						CollapsingHeader::new("Detailed Information")
+						.id_source(uid.to_string() + "detail")
 						.show(ui, |ui| {
 							ui.label(session.get_status());
 						});
 					});
 					ui.separator();
+				}
+				// 历史记录
+				if self.show_history {
+					for (uid, session) in self.history_sessions.get_sessions() {
+						if self.sessions.contains_key(&uid) {
+							continue;
+						}
+						ScrollArea::horizontal().id_source(uid.clone() + "scroll").show(ui, |ui| {
+							ui.label(session.get_name());
+							CollapsingHeader::new("Detailed Information")
+							.id_source(uid.clone() + "history")
+							.show(ui, |ui| {
+								ui.label(format!("File: {}", session.get_file()));
+								ui.label(format!("Url: {}", session.get_url()));
+							});
+						});
+					}
 				}
 				ui.add_space(ctx.used_size().y);
 			});

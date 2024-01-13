@@ -61,6 +61,18 @@ impl Session {
 		self.uid.clone()
 	}
 
+	pub fn get_url(&self) -> String {
+		self.url.clone()
+	}
+
+	pub fn get_file(&self) -> String {
+		if !self.status.is_none() {
+			self.status.clone().unwrap().files[0].path.clone()
+		} else {
+			String::new()
+		}
+	}
+
 	pub fn get_name(&self) -> String {
 		let mut result = self.url.clone();
 		if !self.name.is_empty() {
@@ -191,20 +203,16 @@ Error Message: {}
 			}
 		}
 
-		let mut files = vec![];
-		for file in status.files {
-			files.push(file.path);
-		}
 		format!("
 Download Url: {}
 Save Dir: {}
-Files: {}
+File: {}
 Completed: {}% ( {} / {} )
 {}
 			",
 			self.url,
 			status.dir,
-			files.join("\n"),
+			&status.files[0].path,
 			status.completed_length as f32 / status.total_length as f32 * 100.0,
 			status.completed_length, status.total_length,
 			err_msg
