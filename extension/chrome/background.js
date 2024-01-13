@@ -17,17 +17,8 @@ const pauseIconPath = {
     "128": "img/pause_icon128.png"
 };
 
-// 扩展启动时从存储中读取数值
-chrome.storage.local.get(['shouldSendToServer'], function (result) {
-    shouldSendToServer = result.shouldSendToServer !== undefined ? result.shouldSendToServer : true;
-    updateIcon();
-});
-
-// 当状态发生变化时，将其保存到存储器中
-chrome.storage.local.set({ shouldSendToServer });
-
 // 设置初始图标
-updateIcon();
+chrome.action.setIcon({ path: defaultIconPath });
 
 chrome.runtime.onInstalled.addListener(function () {
     // 在插件安装时添加点击事件监听器
@@ -35,59 +26,41 @@ chrome.runtime.onInstalled.addListener(function () {
         shouldSendToServer = !shouldSendToServer;
         console.log("Sending to server: ", shouldSendToServer);
 
-        // Save the state to storage when it changes
-        chrome.storage.local.set({ shouldSendToServer });
-
         // 根据状态切换图标
-        updateIcon();
+        const newIconPath = shouldSendToServer ? defaultIconPath : pauseIconPath;
+        chrome.action.setIcon({ path: newIconPath });
     });
 });
 
-chrome.downloads.onChanged.addListener(function (downloadDelta) {
-    const downloadId = downloadDelta.id;
-
-    if (!shouldSendToServer || !downloadDelta.state || downloadDelta.state.current !== 'complete') {
+chrome.downloads.onCreated.addListener(function (downloadItem) {
+    if (!shouldSendToServer) {
         console.log("Download information will not be sent to the server.");
         return;
     }
 
-    fetchADMState().then(admIsOpen => {
-        if (!admIsOpen) {
-            console.log("ADM is not open. Download information will not be sent to the server.");
-            return;
-        }
-        if (processedDownloads.has(downloadId)) {
-            console.log("Download information already processed.");
-            return;
-        }
-
-        processedDownloads.add(downloadId);
-
-        // 获取下载信息
-        chrome.downloads.search({ id: downloadId }, function (results) {
-            const downloadItem = results[0];
-
-            let downloadData = {
-                download_id: downloadId,
-                size: downloadItem.totalBytes,
-                webpage_url: downloadItem.url,
-                download_url: downloadItem.finalUrl,
-                resume_state: downloadItem.canResume,
-            };
-            if (devMode) {
-                console.log(downloadData);
-                console.log(JSON.stringify(downloadData));
-            }
-
-            // 发送数据到本地端口
-            removeFromHistory(downloadId);
-            sendDataToServer(downloadData);
-        });
-    });
+    if (downloadItem.state !== 'in_progress') {
+        return;
+    }
+    
+    const downloadId = downloadItem.id;
+    // 获取下载信息
+    let downloadData = {
+        download_id: downloadId,
+        size: downloadItem.totalBytes,
+        webpage_url: downloadItem.url,
+        download_url: downloadItem.finalUrl,
+        resume_state: downloadItem.canResume,
+    };
+    if (devMode) {
+        console.log(downloadData);
+        console.log(JSON.stringify(downloadData));
+    }
+    // 发送数据到本地端口
+    if (!getADMState()) {
+        removeFromHistory(downloadId);
+        sendDataToServer(downloadData);
+    }
 });
-
-// Initialize processedDownloads set
-const processedDownloads = new Set();
 
 async function removeFromHistory(downloadId) {
     await chrome.downloads.removeFile(downloadId).then(pass).catch(pass);
@@ -111,11 +84,51 @@ async function fetchADMState() {
         }
         return false;
     } catch (error) {
+        // console.error('Error fetching ADM state:', error);
+        pass();
         return false;
     }
 }
 
-function updateIcon() {
-    const iconPath = shouldSendToServer ? defaultIconPath : pauseIconPath;
-    chrome.action.setIcon({ path: iconPath });
+async function getADMState() {
+    try {
+        const result = await fetchADMState();
+        console.log("ADM On State: ", result);
+        return result;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function callADM() { 
+
+}
+
+function sendDataToServer(data) {
+    // 发送数据到本地端口
+    fetch('http://127.0.0.1:63319/api', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            if (devMode) { 
+                throw new Error('Network response was not ok');
+            }
+        }
+        return response.json();
+    })
+        .then(data => {
+            if (devMode) { 
+                console.log('Server Responsed:', data);
+            }
+    })
+        .catch(error => {
+            if (devMode) { 
+                console.error('There was a problem sending the data:', error);
+            }
+    });
 }
