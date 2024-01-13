@@ -9,9 +9,7 @@ MACOS_APP_DIR=target/$MACOS_APP_NAME.app
 RESOURCES=assets
 
 echo "Updating submodule"
-cd $MACOS_TRAY_NAME
-git pull
-cd ..
+/bin/bash scripts/update_submodule.sh
 
 echo "Creating app directory structure"
 rm -rf "$MACOS_APP_DIR"
