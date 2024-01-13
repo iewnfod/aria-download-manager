@@ -57,6 +57,7 @@ impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
 		// 判断是否需要退出
 		if get_quit_request() {
+			println!("Quit");
 			self.remove_all();
 			frame.close();
 		}
@@ -161,9 +162,5 @@ impl App for DownloadManager {
 		} else {
 			ctx.request_repaint_after(Duration::from_secs(1));
 		}
-	}
-
-	fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
-		println!("Quit");
 	}
 }

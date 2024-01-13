@@ -23,6 +23,7 @@ async fn state() -> actix_web::Result<String> {
 }
 
 async fn quit_handler() -> actix_web::Result<String> {
+	println!("Request Quit");
 	set_quit_request(true);
     Ok("{\"status\": 0}".to_string())
 }
