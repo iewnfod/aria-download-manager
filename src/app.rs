@@ -111,6 +111,12 @@ impl App for DownloadManager {
 							if ui.button("Remove").clicked() {
 								self.wait_to_remove.push(session.clone());
 							}
+							if ui.button("Open").clicked() {
+								session.open();
+							}
+							if ui.button("Open Folder").clicked() {
+								session.open_folder();
+							}
 						});
 						ui.horizontal(|ui| {
 							if ui.button("Continue").clicked() {

@@ -1,4 +1,4 @@
-use std::{path::Path, time::Instant};
+use std::{path::Path, time::Instant, process::Command};
 
 use aria2_ws::response::Status;
 use url::Url;
@@ -209,5 +209,23 @@ Completed: {}% ( {} / {} )
 			status.completed_length, status.total_length,
 			err_msg
 		).trim().to_string()
+	}
+
+	pub fn open(&self) {
+		if self.status.is_none() {
+			set_status_info("This session has not started".to_string());
+		}
+		let mut command = Command::new("open");
+		command.arg(&self.status.clone().unwrap().files[0].path);
+		command.spawn().unwrap();
+	}
+
+	pub fn open_folder(&self) {
+		if self.status.is_none() {
+			set_status_info("This session has not started".to_string());
+		}
+		let mut command = Command::new("open");
+		command.arg(&self.status.clone().unwrap().dir);
+		command.spawn().unwrap();
 	}
 }
