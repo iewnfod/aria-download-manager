@@ -20,7 +20,7 @@ cp "target/release/$MACOS_BIN_NAME" "$MACOS_APP_BIN"
 echo "Building and copying tray binary"
 /bin/bash scripts/build-tray.sh
 MACOS_APP_TRAY_BIN=$MACOS_APP_DIR/Contents/MacOS/$MACOS_TRAY_NAME
-cp "../$MACOS_TRAY_NAME/target/release/$MACOS_TRAY_NAME" "$MACOS_APP_TRAY_BIN"
+cp "./$MACOS_TRAY_NAME/target/release/$MACOS_TRAY_NAME" "$MACOS_APP_TRAY_BIN"
 
 echo "Linking binary with frameworks"
 for old in `otool -L "$MACOS_APP_BIN" | grep @rpath | cut -f2 | cut -d' ' -f1`; do
