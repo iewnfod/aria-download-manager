@@ -56,7 +56,7 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
         console.log(JSON.stringify(downloadData));
     }
     // 发送数据到本地端口
-    if (!getADMState()) {
+    if (getADMState()) {
         removeFromHistory(downloadId);
         sendDataToServer(downloadData);
     }
