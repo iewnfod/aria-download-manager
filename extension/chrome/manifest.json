@@ -21,7 +21,8 @@
     "manifest_version": 3,
     "name": "AriaDownloadManager Extension",
     "permissions": [ 
-        "downloads"
+        "downloads",
+        "storage"
     ],
     "update_url": "https://github.com/iewnfod/aria-download-manager/extension/chrome/dist",
     "version": "0.0.1",
