@@ -1,7 +1,6 @@
-use std::thread;
+use std::{thread, collections::HashMap};
 
 use aria2_ws::{Client, TaskOptions};
-use eframe::epaint::ahash::HashMap;
 use futures::executor::block_on;
 
 use crate::{data::{get_settings, set_status_info}, session::Session};

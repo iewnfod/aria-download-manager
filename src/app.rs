@@ -1,6 +1,6 @@
-use std::time::Duration;
+use std::{time::Duration, collections::HashMap};
 
-use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}, epaint::ahash::{HashMap, HashMapExt}};
+use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}};
 use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c, history::History};
 
 pub struct DownloadManager {
@@ -151,7 +151,15 @@ impl App for DownloadManager {
 							continue;
 						}
 						ScrollArea::horizontal().id_source(uid.clone() + "scroll").show(ui, |ui| {
-							ui.label(session.get_name());
+							ui.horizontal(|ui| {
+								ui.label(session.get_name());
+								if ui.button("Resume").clicked() {
+									session.resume(&mut self.sessions);
+								}
+								if ui.button("Remove").clicked() {
+									self.history_sessions.remove(&uid);
+								}
+							});
 							CollapsingHeader::new("Detailed Information")
 							.id_source(uid.clone() + "history")
 							.show(ui, |ui| {

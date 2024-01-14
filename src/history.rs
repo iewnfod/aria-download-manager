@@ -30,6 +30,20 @@ impl HistorySession {
 	pub fn get_name(&self) -> String {
 		self.name.clone()
 	}
+
+	pub fn resume(&self, sessions: &mut HashMap<String, Session>) {
+		let mut session = Session::new(self.url.clone()).unwrap();
+		session.start();
+		sessions.insert(session.get_uid(), session);
+	}
+}
+
+impl PartialEq for HistorySession {
+	fn eq(&self, other: &Self) -> bool {
+		self.url == other.url
+		&& self.file == other.file
+		&& self.name == other.name
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,11 +94,24 @@ impl History {
 			file: session.get_file(),
 			name: session.get_name(),
 		};
+		// 如果和之前的相同，那就不需要重新写一遍文件
+		if self.sessions.contains_key(&session.get_uid()) {
+			if self.sessions[&session.get_uid()] == history_session {
+				return;
+			}
+		}
 		self.sessions.insert(session.get_uid(), history_session);
 		self.save();
 	}
 
 	pub fn get_sessions(&self) -> HashMap<String, HistorySession> {
 		self.sessions.clone()
+	}
+
+	pub fn remove(&mut self, uid: &String) {
+		if self.sessions.contains_key(uid) {
+			self.sessions.remove(uid);
+			self.save();
+		}
 	}
 }
