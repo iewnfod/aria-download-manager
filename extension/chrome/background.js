@@ -1,5 +1,6 @@
 let devMode = true;
 let shouldSendToServer = true;
+const blockedMimeTypes = ['application/pdf', /* 其他MIME类型 */];
 const pass = () => null;
 const handleError = (error) => console.log(`Error: ${error}`);
 
@@ -41,6 +42,11 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     if (downloadItem.state !== 'in_progress') {
         return;
     }
+
+    if (blockedMimeTypes.includes(downloadItem.mime)) {
+        console.log("Download of " + downloadItem.mime + " files is not allowed.");
+        return;
+    }
     
     const downloadId = downloadItem.id;
     // 获取下载信息
@@ -51,6 +57,11 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
         download_url: downloadItem.finalUrl,
         resume_state: downloadItem.canResume,
     };
+
+    chrome.cookies.getAll({ url: downloadItem.url }, function (cookies) {
+        downloadData.cookies = cookies;
+    });
+
     if (devMode) {
         console.log(downloadData);
         console.log(JSON.stringify(downloadData));

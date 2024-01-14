@@ -22,7 +22,8 @@
     "name": "AriaDownloadManager Extension",
     "permissions": [ 
         "downloads",
-        "storage"
+        "storage",
+        "cookies"
     ],
     "update_url": "https://github.com/iewnfod/aria-download-manager/extension/chrome/dist",
     "version": "0.0.1",
