@@ -16,6 +16,7 @@ strip = true
 [dependencies]
 actix-web = "4.4.1"
 aria2-ws = "0.4.0"
+chrono = "0.4.31"
 eframe = "0.22.0"
 env_proxy = "0.4.1"
 futures = "0.3.30"

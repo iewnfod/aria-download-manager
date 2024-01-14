@@ -1,5 +1,6 @@
 use std::{path::PathBuf, collections::HashMap};
 
+use chrono::{Local, Datelike, Timelike};
 use serde::{Serialize, Deserialize};
 
 use crate::{settings::get_app_support_path, session::Session};
@@ -11,14 +12,28 @@ fn get_history_path() -> PathBuf {
 		.join(HISTORY_FILE)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub struct HistorySession {
 	url: String,
 	file: String,
 	name: String,
+	time: (i32, u32, u32, u32, u32, u32),
 }
 
 impl HistorySession {
+	pub fn new(url: String, file: String, name: String) -> Self {
+		let time = Local::now();
+		Self {
+			url,
+			file,
+			name,
+			time: (
+				time.year(), time.month(), time.day(),
+				time.hour(), time.minute(), time.second(),
+			),
+		}
+	}
+
 	pub fn get_url(&self) -> String {
 		self.url.clone()
 	}
@@ -36,6 +51,10 @@ impl HistorySession {
 		session.start();
 		sessions.insert(session.get_uid(), session);
 	}
+
+	pub fn get_time(&self) -> String {
+		format!("{}-{}-{} {}:{}:{}", self.time.0, self.time.1, self.time.2, self.time.3, self.time.4, self.time.5)
+	}
 }
 
 impl PartialEq for HistorySession {
@@ -43,6 +62,22 @@ impl PartialEq for HistorySession {
 		self.url == other.url
 		&& self.file == other.file
 		&& self.name == other.name
+	}
+}
+
+impl Ord for HistorySession {
+	fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+		if self.time == other.time {
+			(&self.url, &self.file, &self.name).cmp(&(&other.url, &other.file, &other.name))
+		} else {
+			self.time.cmp(&other.time)
+		}
+	}
+}
+
+impl PartialOrd for HistorySession  {
+	fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+		Some(self.cmp(other))
 	}
 }
 
@@ -89,11 +124,11 @@ impl History {
 	}
 
 	pub fn add_session(&mut self, session: Session) {
-		let history_session =  HistorySession {
-			url: session.get_url(),
-			file: session.get_file(),
-			name: session.get_name(),
-		};
+		let history_session = HistorySession::new(
+			session.get_url(),
+			session.get_file(),
+			session.get_name(),
+		);
 		// 如果和之前的相同，那就不需要重新写一遍文件
 		if self.sessions.contains_key(&session.get_uid()) {
 			if self.sessions[&session.get_uid()] == history_session {
@@ -104,8 +139,13 @@ impl History {
 		self.save();
 	}
 
-	pub fn get_sessions(&self) -> HashMap<String, HistorySession> {
-		self.sessions.clone()
+	pub fn get_sessions(&self) -> Vec<(String, HistorySession)> {
+		let mut data = vec![];
+		for (uid, s) in self.sessions.iter() {
+			data.push((uid.clone(), s.clone()));
+		}
+		data.sort_by(|a, b| b.1.cmp(&a.1));
+		data
 	}
 
 	pub fn remove(&mut self, uid: &String) {

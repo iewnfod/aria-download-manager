@@ -150,21 +150,22 @@ impl App for DownloadManager {
 						if self.sessions.contains_key(&uid) {
 							continue;
 						}
-						ScrollArea::horizontal().id_source(uid.clone() + "scroll").show(ui, |ui| {
+						ScrollArea::horizontal().id_source(format!("{}scroll", &uid)).show(ui, |ui| {
 							ui.horizontal(|ui| {
 								ui.label(session.get_name());
 								if ui.button("Resume").clicked() {
 									session.resume(&mut self.sessions);
 								}
 								if ui.button("Remove").clicked() {
-									self.history_sessions.remove(&uid);
+									self.history_sessions.remove(&uid.clone());
 								}
 							});
 							CollapsingHeader::new("Detailed Information")
-							.id_source(uid.clone() + "history")
+							.id_source(format!("{}history", &uid))
 							.show(ui, |ui| {
 								ui.label(format!("File: {}", session.get_file()));
 								ui.label(format!("Url: {}", session.get_url()));
+								ui.label(format!("Start Time: {}", session.get_time()));
 							});
 						});
 					}
