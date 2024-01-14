@@ -112,6 +112,9 @@ impl Session {
 		if self.is_completed() {
 			return "Completed!".to_string();
 		}
+		if self.get_verified_length() != 0 && !self.is_verified() {
+			return "Verifying...".to_string();
+		}
 		if !self.gid.is_empty() && !self.status.is_none() && self.running {
 			let speed = self.status.clone().unwrap().download_speed;
 			let mut result_speed = speed as f32;
@@ -175,10 +178,31 @@ impl Session {
 		self.status = Some(new_status);
 	}
 
+	fn get_verified_length(&self) -> u64 {
+		if self.status.is_none() {
+			0
+		} else {
+			if let Some(verified_length) = self.status.clone().unwrap().verified_length {
+				verified_length
+			} else {
+				0
+			}
+		}
+	}
+
+	fn is_verified(&self) -> bool {
+		if self.status.is_none() {
+			return false;
+		}
+		self.get_verified_length() == self.status.clone().unwrap().total_length
+	}
+
 	pub fn is_completed(&self) -> bool {
 		if let Some(status) = self.status.clone() {
 			if !self.gid.is_empty() {
-				status.completed_length == status.total_length && status.completed_length != 0
+				status.completed_length == status.total_length
+				&& status.completed_length != 0
+				&& self.is_verified()
 			} else {
 				false
 			}
@@ -204,17 +228,26 @@ Error Message: {}
 		}
 
 		format!("
+Gid: {}
 Download Url: {}
 Save Dir: {}
 File: {}
 Completed: {}% ( {} / {} )
+Verified: {}% ( {} / {} )
+Connection Number: {}
+Piece Length: {}
 {}
 			",
+			status.gid,
 			self.url,
 			status.dir,
 			&status.files[0].path,
 			status.completed_length as f32 / status.total_length as f32 * 100.0,
 			status.completed_length, status.total_length,
+			self.get_verified_length() as f32 / status.total_length as f32 * 100.0,
+			self.get_verified_length(), status.total_length,
+			status.connections,
+			status.piece_length,
 			err_msg
 		).trim().to_string()
 	}
