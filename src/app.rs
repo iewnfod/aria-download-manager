@@ -22,6 +22,7 @@ impl DownloadManager {
 				Err(_) => return,
 			};
 			session.set_cookie(data.download_cookie);
+			session.set_webpage(data.webpage_url);
 			session.start();
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);

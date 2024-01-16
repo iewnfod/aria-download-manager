@@ -15,16 +15,18 @@ fn get_history_path() -> PathBuf {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub struct HistorySession {
 	url: String,
+	webpage: String,
 	file: String,
 	name: String,
 	time: (i32, u32, u32, u32, u32, u32),
 }
 
 impl HistorySession {
-	pub fn new(url: String, file: String, name: String) -> Self {
+	pub fn new(url: String, webpage: String, file: String, name: String) -> Self {
 		let time = Local::now();
 		Self {
 			url,
+			webpage,
 			file,
 			name,
 			time: (
@@ -126,6 +128,7 @@ impl History {
 	pub fn add_session(&mut self, session: Session) {
 		let history_session = HistorySession::new(
 			session.get_url(),
+			session.get_webpage(),
 			session.get_file(),
 			session.get_name(),
 		);

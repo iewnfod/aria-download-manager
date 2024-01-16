@@ -19,6 +19,7 @@ pub struct Session {
 	uid: String,
 	gid: String,
 	url: String,
+	webpage: String,
 	status: Option<Status>,
 	update_time: Instant,
 	update_frequency: u128,
@@ -50,6 +51,7 @@ impl Session {
 			uid: Uuid::new_v4().to_string(),
 			gid: String::new(),
 			url,
+			webpage: String::new(),
 			status: None,
 			update_time: Instant::now(),
 			update_frequency: 100,
@@ -278,5 +280,13 @@ Piece Length: {}
 
 	pub fn get_cookie(&self) -> String {
 		self.cookie.iter().map(|c| c.to_string()).collect::<Vec<String>>().join("; ")
+	}
+
+	pub fn set_webpage(&mut self, webpage: String) {
+		self.webpage = webpage;
+	}
+
+	pub fn get_webpage(&self) -> String {
+		self.webpage.clone()
 	}
 }
