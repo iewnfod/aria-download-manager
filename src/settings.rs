@@ -23,6 +23,7 @@ fn get_save_path() -> PathBuf {
 pub struct Settings {
 	pub split_num: i32,
 	pub proxy: String,
+	pub user_agent: String,
 	save_path: PathBuf,
 }
 
@@ -32,6 +33,7 @@ impl Default for Settings {
 		Self {
 			split_num: 16,
 			proxy: "".to_string(),
+			user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
 			save_path
 		}
 	}

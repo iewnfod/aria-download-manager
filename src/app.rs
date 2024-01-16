@@ -192,6 +192,10 @@ impl App for DownloadManager {
 						ui.label("All Proxy Url");
 						ui.text_edit_singleline(&mut self.settings.proxy);
 						ui.end_row();
+
+						ui.label("User Agent");
+						ui.text_edit_singleline(&mut self.settings.user_agent);
+						ui.end_row();
 					});
 					if ui.button("Apply").clicked() {
 						self.apply_settings();
