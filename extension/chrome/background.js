@@ -51,11 +51,11 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     const downloadId = downloadItem.id;
     // 获取下载信息
     let downloadData = {
-        download_id: downloadId,
+        downloadID: downloadId,
         size: downloadItem.totalBytes,
-        webpage_url: downloadItem.url,
-        download_url: downloadItem.finalUrl,
-        resume_state: downloadItem.canResume,
+        webpageUrl: downloadItem.url,
+        downloadUrl: downloadItem.finalUrl,
+        resumeState: downloadItem.canResume,
     };
 
     chrome.cookies.getAll({ url: downloadItem.url }, function (cookies) {
