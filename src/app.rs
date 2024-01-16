@@ -1,7 +1,7 @@
 use std::{time::Duration, collections::HashMap};
 
 use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}};
-use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c, history::History};
+use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -14,13 +14,14 @@ pub struct DownloadManager {
 }
 
 impl DownloadManager {
-	fn new_session(&mut self) {
-		self.url_input = self.url_input.trim().to_string();
-		if !self.url_input.is_empty() {
-			let mut session = match Session::new(self.url_input.clone()) {
+	fn new_session(&mut self, data: Info) {
+		let url = data.download_url.clone().trim().to_string();
+		if !url.is_empty() {
+			let mut session = match Session::new(url.clone()) {
 				Ok(s) => s,
 				Err(_) => return,
 			};
+			session.set_cookie(data.download_cookie);
 			session.start();
 			let name = session.get_name();
 			self.sessions.insert(session.get_uid(), session);
@@ -81,8 +82,7 @@ impl App for DownloadManager {
 		// 读取待添加的任务
 		let wait_to_start = get_wait_to_start();
 		for u in wait_to_start.iter() {
-			self.url_input = u.to_string();
-			self.new_session();
+			self.new_session(u.clone());
 		}
 		clear_wait_to_start();
 		// 获取状态栏数据
@@ -96,7 +96,7 @@ impl App for DownloadManager {
 			ui.horizontal(|ui| {
 				ui.add(TextEdit::singleline(&mut self.url_input).hint_text("Target Url"));
 				if ui.button("New Session").clicked() {
-					self.new_session();
+					self.new_session(Info::with_download_url(self.url_input.clone()));
 				}
 				ui.checkbox(&mut self.show_history, "Show History");
 			});

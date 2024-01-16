@@ -3,18 +3,54 @@ use serde::{Serialize, Deserialize};
 
 use crate::data::{add_wait_to_start, set_quit_request};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Info {
-	download_id: usize,
-	size: usize,
-	webpage_url: String,
-	download_url: String,
-	resume_state: bool,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Info {
+	pub download_id: usize,
+	pub size: usize,
+	pub webpage_url: String,
+	pub download_url: String,
+	pub resume_state: bool,
+	pub download_cookie: Vec<Cookie>,
+}
+
+impl Info {
+	pub fn with_download_url(url: String) -> Self {
+		Self {
+			download_id: 0,
+			size: 0,
+			webpage_url: "".to_string(),
+			download_url: url,
+			resume_state: false,
+			download_cookie: vec![],
+		}
+	}
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Cookie {
+	domain: String,
+	host_only: bool,
+	http_only: bool,
+	name: String,
+	path: String,
+	same_site: String,
+	secure: bool,
+	session: bool,
+	store_id: String,
+	value: String,
+}
+
+impl ToString for Cookie {
+	fn to_string(&self) -> String {
+		format!("{}={}", self.name, self.value)
+	}
 }
 
 async fn index(info: web::Json<Info>) -> actix_web::Result<String> {
 	println!("{:?}", &info);
-	add_wait_to_start(info.download_url.clone());
+	add_wait_to_start(info.clone());
 	Ok("{}".to_string())
 }
 

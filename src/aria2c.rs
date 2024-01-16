@@ -26,13 +26,16 @@ fn get_client() -> Option<Client> {
 	}
 }
 
-fn get_options() -> TaskOptions {
+fn get_options(session: &Session) -> TaskOptions {
 	let mut opt = TaskOptions::default();
 	let settings = get_settings();
 	opt.split = Some(settings.split_num);
 	if !settings.proxy.is_empty() {
 		opt.all_proxy = Some(settings.proxy.clone());
 	}
+	opt.header = Some(vec![
+		format!("Cookie: {}", session.get_cookie()),
+	]);
 	opt.dir = Some(format!("/Users/{}/Downloads", users::get_current_username().unwrap().to_str().unwrap()));
 	opt
 }
@@ -45,7 +48,7 @@ pub fn add_uri(url: String, target_session: &mut Session) {
 		get_client().unwrap()
 		.add_uri(
 			vec![url],
-			Some(get_options()),
+			Some(get_options(&target_session)),
 			None,
 			None
 		)

@@ -4,7 +4,7 @@ use aria2_ws::response::Status;
 use url::Url;
 use uuid::Uuid;
 
-use crate::{aria2c, data::set_status_info};
+use crate::{aria2c, data::set_status_info, server::Cookie};
 
 const UNITS: [&str; 5] = [
 	"B/s",
@@ -24,6 +24,7 @@ pub struct Session {
 	update_frequency: u128,
 	running: bool,
 	name: String,
+	cookie: Vec<Cookie>,
 }
 
 impl Session {
@@ -54,6 +55,7 @@ impl Session {
 			update_frequency: 100,
 			running: false,
 			name: name.to_string(),
+			cookie: vec![],
 		})
 	}
 
@@ -268,5 +270,13 @@ Piece Length: {}
 		let mut command = Command::new("open");
 		command.arg(&self.status.clone().unwrap().dir);
 		command.spawn().unwrap();
+	}
+
+	pub fn set_cookie(&mut self, cookie: Vec<Cookie>) {
+		self.cookie = cookie;
+	}
+
+	pub fn get_cookie(&self) -> String {
+		self.cookie.iter().map(|c| c.to_string()).collect::<Vec<String>>().join("; ")
 	}
 }

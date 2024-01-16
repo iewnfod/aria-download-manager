@@ -1,7 +1,7 @@
-use crate::settings::Settings;
+use crate::{settings::Settings, server::Info};
 
 static mut STATUS_INFO: String = String::new();
-static mut WAIT_TO_START: Vec<String> = vec![];
+static mut WAIT_TO_START: Vec<Info> = vec![];
 static mut QUIT_REQUEST: bool = false;
 
 static mut SETTINGS: Option<Settings> = None;
@@ -34,13 +34,13 @@ pub fn get_status_info() -> String {
 	}
 }
 
-pub fn add_wait_to_start(url: String) {
+pub fn add_wait_to_start(data: Info) {
 	unsafe {
-		WAIT_TO_START.push(url);
+		WAIT_TO_START.push(data);
 	}
 }
 
-pub fn get_wait_to_start() -> Vec<String> {
+pub fn get_wait_to_start() -> Vec<Info> {
 	unsafe {
 		WAIT_TO_START.clone()
 	}
