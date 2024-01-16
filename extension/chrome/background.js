@@ -50,27 +50,26 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     
     const downloadId = downloadItem.id;
     // 获取下载信息
-    let downloadData = {
-        downloadID: downloadId,
-        size: downloadItem.totalBytes,
-        webpageUrl: downloadItem.url,
-        downloadUrl: downloadItem.finalUrl,
-        resumeState: downloadItem.canResume,
-    };
-
     chrome.cookies.getAll({ url: downloadItem.url }, function (cookies) {
-        downloadData.cookies = cookies;
+        let downloadData = {
+            downloadID: downloadId,
+            size: downloadItem.totalBytes,
+            webpageUrl: downloadItem.url,
+            downloadUrl: downloadItem.finalUrl,
+            resumeState: downloadItem.canResume,
+            downloadCookie: cookies
+        };
+    
+        if (devMode) {
+            console.log(downloadData);
+            console.log(JSON.stringify(downloadData));
+        }
+        // 发送数据到本地端口
+        if (getADMState()) {
+            removeFromHistory(downloadId);
+            sendDataToServer(downloadData);
+        }
     });
-
-    if (devMode) {
-        console.log(downloadData);
-        console.log(JSON.stringify(downloadData));
-    }
-    // 发送数据到本地端口
-    if (getADMState()) {
-        removeFromHistory(downloadId);
-        sendDataToServer(downloadData);
-    }
 });
 
 async function removeFromHistory(downloadId) {
