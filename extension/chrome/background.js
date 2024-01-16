@@ -52,7 +52,7 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     // 获取下载信息
     chrome.cookies.getAll({ url: downloadItem.url }, function (cookies) {
         let downloadData = {
-            downloadID: downloadId,
+            downloadId: downloadId,
             size: downloadItem.totalBytes,
             webpageUrl: downloadItem.url,
             downloadUrl: downloadItem.finalUrl,
