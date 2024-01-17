@@ -140,7 +140,50 @@ impl App for DownloadManager {
 						CollapsingHeader::new("Detailed Information")
 						.id_source(uid.to_string() + "detail")
 						.show(ui, |ui| {
-							ui.label(session.get_status());
+							Grid::new(session.get_uid() + "grid")
+							.show(ui, |ui| {
+								ui.label("Gid");
+								ui.label(session.get_gid());
+								ui.end_row();
+
+								ui.label("Download Url");
+								ui.label(session.get_url());
+								ui.end_row();
+
+								ui.label("Webpage url");
+								ui.label(session.get_webpage());
+								ui.end_row();
+
+								ui.label("File");
+								ui.label(session.get_file());
+								ui.end_row();
+
+								ui.label("Completed");
+								ui.label(session.get_complete_data());
+								ui.end_row();
+
+								ui.label("Verified");
+								ui.label(session.get_verified_data());
+								ui.end_row();
+
+								ui.label("Connection Number");
+								ui.label(session.get_connections_num().to_string());
+								ui.end_row();
+
+								ui.label("Pieces");
+								ui.label(format!("{}B * {}", session.get_pieces_length(), session.get_pieces_num()));
+								ui.end_row();
+
+								if session.is_error() {
+									ui.label("Error Code");
+									ui.label(session.get_error_code());
+									ui.end_row();
+
+									ui.label("Error Message");
+									ui.label(session.get_error_msg());
+									ui.end_row();
+								}
+							});
 						});
 					});
 					ui.separator();
@@ -151,7 +194,8 @@ impl App for DownloadManager {
 						if self.sessions.contains_key(&uid) {
 							continue;
 						}
-						ScrollArea::horizontal().id_source(format!("{}scroll", &uid)).show(ui, |ui| {
+						ScrollArea::horizontal().id_source(format!("{}scroll", &uid))
+						.show(ui, |ui| {
 							ui.horizontal(|ui| {
 								ui.label(session.get_name());
 								if ui.button("Resume").clicked() {
@@ -164,9 +208,24 @@ impl App for DownloadManager {
 							CollapsingHeader::new("Detailed Information")
 							.id_source(format!("{}history", &uid))
 							.show(ui, |ui| {
-								ui.label(format!("File: {}", session.get_file()));
-								ui.label(format!("Url: {}", session.get_url()));
-								ui.label(format!("Start Time: {}", session.get_time()));
+								Grid::new(format!("{}grid", &uid))
+								.show(ui, |ui| {
+									ui.label("File");
+									ui.label(session.get_file());
+									ui.end_row();
+
+									ui.label("Download Url");
+									ui.label(session.get_url());
+									ui.end_row();
+
+									ui.label("Webpage Url");
+									ui.label(session.get_webpage());
+									ui.end_row();
+
+									ui.label("Start Time");
+									ui.label(session.get_time());
+									ui.end_row();
+								});
 							});
 						});
 					}
@@ -183,7 +242,6 @@ impl App for DownloadManager {
 			ui.collapsing("Settings", |ui| {
 				ScrollArea::vertical().show(ui, |ui| {
 					Grid::new("settings")
-					.num_columns(2)
 					.show(ui, |ui| {
 						ui.label("Connection Number");
 						ui.add(DragValue::new(&mut self.settings.split_num).clamp_range(1..=64));

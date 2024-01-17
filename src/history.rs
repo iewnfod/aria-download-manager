@@ -57,6 +57,10 @@ impl HistorySession {
 	pub fn get_time(&self) -> String {
 		format!("{}-{}-{} {}:{}:{}", self.time.0, self.time.1, self.time.2, self.time.3, self.time.4, self.time.5)
 	}
+
+	pub fn get_webpage(&self) -> String {
+		self.webpage.clone()
+	}
 }
 
 impl PartialEq for HistorySession {

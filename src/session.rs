@@ -206,7 +206,6 @@ impl Session {
 			if !self.gid.is_empty() {
 				status.completed_length == status.total_length
 				&& status.completed_length != 0
-				&& self.is_verified()
 			} else {
 				false
 			}
@@ -215,45 +214,20 @@ impl Session {
 		}
 	}
 
-	pub fn get_status(&self) -> String {
-		if self.gid.is_empty() || self.status.is_none() {
-			return "This session has not started!".to_string();
-		}
-		let status = self.status.clone().unwrap();
-		let mut err_msg = String::new();
-		if let Some(err) = status.error_code {
-			err_msg = format!("
-Error Code: {}
-Error Message: {}
-			", err, status.error_message.unwrap()).trim().to_string();
-			if err == "0" {
-				err_msg = String::new();
+	pub fn is_error(&self) -> bool {
+		if let Some(status) = self.status.clone() {
+			if status.error_code.is_none() {
+				false
+			} else {
+				if status.error_code.unwrap() == "0" {
+					true
+				} else {
+					false
+				}
 			}
+		} else {
+			false
 		}
-
-		format!("
-Gid: {}
-Download Url: {}
-Save Dir: {}
-File: {}
-Completed: {}% ( {} / {} )
-Verified: {}% ( {} / {} )
-Connection Number: {}
-Piece Length: {}
-{}
-			",
-			status.gid,
-			self.url,
-			status.dir,
-			&status.files[0].path,
-			status.completed_length as f32 / status.total_length as f32 * 100.0,
-			status.completed_length, status.total_length,
-			self.get_verified_length() as f32 / status.total_length as f32 * 100.0,
-			self.get_verified_length(), status.total_length,
-			status.connections,
-			status.piece_length,
-			err_msg
-		).trim().to_string()
 	}
 
 	pub fn open(&self) {
@@ -288,5 +262,73 @@ Piece Length: {}
 
 	pub fn get_webpage(&self) -> String {
 		self.webpage.clone()
+	}
+
+	pub fn get_gid(&self) -> String {
+		self.gid.clone()
+	}
+
+	pub fn get_complete_data(&self) -> String {
+		if self.status.is_none() {
+			String::new()
+		} else {
+			let status = self.status.clone().unwrap();
+			format!("{}% ( {} / {} )",
+				status.completed_length as f32 / status.total_length as f32 * 100.0,
+				status.completed_length, status.total_length,
+			)
+		}
+	}
+
+	pub fn get_verified_data(&self) -> String {
+		if self.status.is_none() {
+			String::new()
+		} else {
+			let status = self.status.clone().unwrap();
+			format!("{}% ( {} / {} )",
+				self.get_verified_length() as f32 / status.total_length as f32 * 100.0,
+				self.get_verified_length(), status.total_length,
+			)
+		}
+	}
+
+	pub fn get_connections_num(&self) -> u64 {
+		if self.status.is_none() {
+			0
+		} else {
+			self.status.clone().unwrap().connections
+		}
+	}
+
+	pub fn get_pieces_num(&self) -> u64 {
+		if self.status.is_none() {
+			0
+		} else {
+			self.status.clone().unwrap().num_pieces
+		}
+	}
+
+	pub fn get_pieces_length(&self) -> u64 {
+		if self.status.is_none() {
+			0
+		} else {
+			self.status.clone().unwrap().piece_length
+		}
+	}
+
+	pub fn get_error_code(&self) -> String {
+		if self.status.is_none() {
+			String::new()
+		} else {
+			self.status.clone().unwrap().error_code.unwrap_or("0".to_string())
+		}
+	}
+
+	pub fn get_error_msg(&self) -> String {
+		if self.status.is_none() {
+			String::new()
+		} else {
+			self.status.clone().unwrap().error_message.unwrap_or("".to_string())
+		}
 	}
 }
