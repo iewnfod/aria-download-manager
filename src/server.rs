@@ -1,7 +1,7 @@
 use actix_web::{HttpServer, App, web};
 use serde::{Serialize, Deserialize};
 
-use crate::data::{add_wait_to_start, set_quit_request};
+use crate::data::{add_wait_to_start, set_focus_request, set_quit_request};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,12 +64,19 @@ async fn quit_handler() -> actix_web::Result<String> {
     Ok("{\"status\": 0}".to_string())
 }
 
+async fn focus() -> actix_web::Result<String> {
+	println!("Request Focus");
+	set_focus_request(true);
+	Ok("{\"status\": 0}".to_string())
+}
+
 pub async fn listen() {
 	println!("Start Server");
 	HttpServer::new(|| {
 		App::new()
 			.route("/api", web::post().to(index))
 			.route("/state", web::get().to(state))
+			.route("/focus", web::get().to(focus))
 			.route("/quit", web::get().to(quit_handler))
 	})
 	.bind("127.0.0.1:63318").unwrap()

@@ -3,6 +3,7 @@ use crate::{settings::Settings, server::Info};
 static mut STATUS_INFO: String = String::new();
 static mut WAIT_TO_START: Vec<Info> = vec![];
 static mut QUIT_REQUEST: bool = false;
+static mut FOCUS_REQUEST: bool = false;
 
 static mut SETTINGS: Option<Settings> = None;
 
@@ -61,5 +62,17 @@ pub fn get_quit_request() -> bool {
 pub fn set_quit_request(q: bool) {
 	unsafe {
 		QUIT_REQUEST = q;
+	}
+}
+
+pub fn get_focus_request() -> bool {
+	unsafe {
+		FOCUS_REQUEST
+	}
+}
+
+pub fn set_focus_request(f: bool) {
+	unsafe {
+		FOCUS_REQUEST = f;
 	}
 }

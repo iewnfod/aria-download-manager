@@ -1,7 +1,7 @@
 use std::{time::Duration, collections::HashMap};
 
-use eframe::{App, egui::{CentralPanel, ScrollArea, ProgressBar, TopBottomPanel, Id, TextEdit, CollapsingHeader, Grid, DragValue}};
-use crate::{session::Session, data::{set_status_info, get_status_info, get_wait_to_start, clear_wait_to_start, set_settings, get_quit_request}, settings::Settings, aria2c, history::History, server::Info};
+use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
+use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_quit_request, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -141,6 +141,7 @@ impl App for DownloadManager {
 						.id_source(uid.to_string() + "detail")
 						.show(ui, |ui| {
 							Grid::new(session.get_uid() + "grid")
+							.num_columns(2)
 							.show(ui, |ui| {
 								ui.label("Gid");
 								ui.label(session.get_gid());
@@ -212,6 +213,7 @@ impl App for DownloadManager {
 							.id_source(format!("{}history", &uid))
 							.show(ui, |ui| {
 								Grid::new(format!("{}grid", &uid))
+								.num_columns(2)
 								.show(ui, |ui| {
 									ui.label("File");
 									ui.label(session.get_file());
@@ -245,6 +247,7 @@ impl App for DownloadManager {
 			ui.collapsing("Settings", |ui| {
 				ScrollArea::vertical().show(ui, |ui| {
 					Grid::new("settings")
+					.num_columns(2)
 					.show(ui, |ui| {
 						ui.label("Connection Number");
 						ui.add(DragValue::new(&mut self.settings.split_num).clamp_range(1..=64));
@@ -265,6 +268,12 @@ impl App for DownloadManager {
 			});
 			ui.add_space(5.0);
 		});
+
+		// 查看聚焦请求
+		if get_focus_request() {
+			println!("Do Focus Request");
+			set_focus_request(false);
+		}
 
 		// 如果还有在下载的东西，那就刷新页面
 		if !all_finished {
