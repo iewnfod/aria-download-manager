@@ -198,6 +198,9 @@ impl App for DownloadManager {
 						.show(ui, |ui| {
 							ui.horizontal(|ui| {
 								ui.label(session.get_name());
+								if ui.button("Open in Browser").clicked() {
+									session.open_webpage();
+								}
 								if ui.button("Resume").clicked() {
 									session.resume(&mut self.sessions);
 								}

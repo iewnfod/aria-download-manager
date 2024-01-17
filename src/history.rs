@@ -1,4 +1,4 @@
-use std::{path::PathBuf, collections::HashMap};
+use std::{collections::HashMap, path::PathBuf, process::Command};
 
 use chrono::{Local, Datelike, Timelike};
 use serde::{Serialize, Deserialize};
@@ -60,6 +60,12 @@ impl HistorySession {
 
 	pub fn get_webpage(&self) -> String {
 		self.webpage.clone()
+	}
+
+	pub fn open_webpage(&self) {
+		let mut command = Command::new("open");
+		command.arg(&self.webpage);
+		command.spawn().unwrap();
 	}
 }
 
