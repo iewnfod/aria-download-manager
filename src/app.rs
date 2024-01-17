@@ -272,6 +272,7 @@ impl App for DownloadManager {
 		// 查看聚焦请求
 		if get_focus_request() {
 			println!("Do Focus Request");
+			frame.focus();
 			set_focus_request(false);
 		}
 

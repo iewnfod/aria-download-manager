@@ -31,8 +31,10 @@ async fn main() {
     let options = NativeOptions {
         initial_window_size: Some(vec2(600.0, 350.0)),
         icon_data,
+        follow_system_theme: true,
         ..Default::default()
     };
+
     // 运行应用
     run_native(
         "Aria Download Manager",
