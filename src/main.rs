@@ -39,6 +39,10 @@ async fn main() {
     run_native(
         "Aria Download Manager",
         options,
-        Box::new(|_cc| Box::<app::DownloadManager>::default())
+        Box::new(|cc|
+            Box::<app::DownloadManager>::new(
+                app::DownloadManager::new(cc)
+            )
+        )
     ).unwrap();
 }

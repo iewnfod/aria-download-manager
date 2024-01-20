@@ -172,7 +172,6 @@ impl Session {
 		if !self.gid.is_empty() {
 			if self.update_time.elapsed().as_millis() > self.update_frequency {
 				aria2c::get_status(self.gid.clone(), self);
-				// self.status = Some(aria2c::get_status(self.gid.clone()));
 				self.update_time = Instant::now();
 			}
 		}

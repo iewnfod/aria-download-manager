@@ -1,3 +1,5 @@
+use eframe::{egui::{FontData, FontDefinitions, Style, TextStyle, Visuals}, epaint::{FontFamily, FontId}};
+
 use crate::{settings::Settings, server::Info};
 
 static mut STATUS_INFO: String = String::new();
@@ -75,4 +77,42 @@ pub fn set_focus_request(f: bool) {
 	unsafe {
 		FOCUS_REQUEST = f;
 	}
+}
+
+pub fn get_global_fonts() -> FontDefinitions {
+	let mut fonts = FontDefinitions::default();
+	let font_name = "LXGW".to_string();
+
+	fonts.font_data.insert(
+		font_name.clone(),
+		FontData::from_static(include_bytes!("../assets/LXGWWenKaiGBFusion-Regular.ttf"))
+	);
+
+	fonts.families.get_mut(&FontFamily::Monospace).unwrap()
+	.insert(0, font_name.clone());
+
+	fonts
+}
+
+pub fn get_global_style() -> Style {
+	let mut style = Style::default();
+
+	// 设置字体
+	let small_font_id = FontId::new(9.0, FontFamily::Monospace);
+	let middle_font_id = FontId::new(12.5, FontFamily::Monospace);
+	let large_font_id = FontId::new(18.0, FontFamily::Monospace);
+
+	style.text_styles.insert(TextStyle::Small, small_font_id.clone());
+	style.text_styles.insert(TextStyle::Body, middle_font_id.clone());
+	style.text_styles.insert(TextStyle::Button, middle_font_id.clone());
+	style.text_styles.insert(TextStyle::Heading, large_font_id.clone());
+
+	// 设置亮暗色主题
+	if get_settings().dark_mode {
+		style.visuals = Visuals::dark();
+	} else {
+		style.visuals = Visuals::light();
+	}
+
+	style
 }

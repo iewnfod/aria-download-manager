@@ -1,7 +1,7 @@
 use std::{time::Duration, collections::HashMap};
 
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
-use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_quit_request, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
+use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -11,9 +11,19 @@ pub struct DownloadManager {
 	settings: Settings,
 	show_history: bool,
 	history_sessions: History,
+	settings_changed: bool,
 }
 
 impl DownloadManager {
+	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+		// 加载字体
+		cc.egui_ctx.set_fonts(get_global_fonts());
+		// 加载样式
+		cc.egui_ctx.set_style(get_global_style());
+		// 创建实例
+		Self::default()
+	}
+
 	fn new_session(&mut self, data: Info) {
 		let url = data.download_url.clone().trim().to_string();
 		if !url.is_empty() {
@@ -32,11 +42,13 @@ impl DownloadManager {
 		}
 	}
 
-	fn apply_settings(&self) {
+	fn apply_settings(&mut self) {
 		// 同步设置
 		set_settings(self.settings.clone());
 		// 保存设置
 		self.settings.save();
+		// 标记改变
+		self.settings_changed = true;
 		// 提示信息
 		set_status_info("Apply Settings".to_string());
 	}
@@ -58,12 +70,19 @@ impl Default for DownloadManager {
 			settings: Settings::new(),
 			show_history: false,
 			history_sessions: History::new(),
+			settings_changed: false,
 		}
 	}
 }
 
 impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
+		// 如果设置修改了，那就重新设置字体以及主题
+		if self.settings_changed {
+			ctx.set_fonts(get_global_fonts());
+			ctx.set_style(get_global_style());
+			self.settings_changed = false;
+		}
 		// 更新 sessions
 		aria2c::get_active(&mut self.sessions);
 		// 判断是否需要退出
@@ -259,6 +278,10 @@ impl App for DownloadManager {
 
 						ui.label("User Agent");
 						ui.text_edit_singleline(&mut self.settings.user_agent);
+						ui.end_row();
+
+						ui.label("Dark Mode");
+						ui.checkbox(&mut self.settings.dark_mode, "Enable");
 						ui.end_row();
 					});
 					if ui.button("Apply").clicked() {

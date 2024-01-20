@@ -24,6 +24,7 @@ pub struct Settings {
 	pub split_num: i32,
 	pub proxy: String,
 	pub user_agent: String,
+	pub dark_mode: bool,
 	save_path: PathBuf,
 }
 
@@ -34,6 +35,7 @@ impl Default for Settings {
 			split_num: 16,
 			proxy: "".to_string(),
 			user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
+			dark_mode: false,
 			save_path
 		}
 	}
