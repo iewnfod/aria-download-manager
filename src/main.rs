@@ -1,3 +1,6 @@
+use std::thread;
+
+use data::listen_theme_change;
 use eframe::{NativeOptions, epaint::vec2, run_native, IconData};
 use image::DynamicImage;
 
@@ -13,6 +16,8 @@ mod history;
 async fn main() {
     // 启用监听服务
     tokio::spawn(server::listen());
+    // 监听系统主题变化
+    thread::spawn(|| listen_theme_change());
     // 应用设置
     // 图标
     let icon_source: Option<DynamicImage> = match image::open("assets/icon.iconset/icon_512x512.png") {

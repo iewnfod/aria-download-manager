@@ -1,3 +1,5 @@
+use std::process::{Command, Stdio};
+
 use eframe::{egui::{FontData, FontDefinitions, Style, TextStyle, Visuals}, epaint::{FontFamily, FontId}};
 
 use crate::{settings::Settings, server::Info};
@@ -115,4 +117,25 @@ pub fn get_global_style() -> Style {
 	}
 
 	style
+}
+
+fn get_dark_mode() -> bool {
+	let mut command = Command::new("osascript");
+	command.arg("-e").arg("tell application \"System Events\" to tell appearance preferences to return dark mode");
+	let output = command.stdout(Stdio::piped()).output().unwrap();
+	let str_data = String::from_utf8_lossy(&output.stdout);
+	if str_data.trim() == "true" {
+		true
+	} else {
+		false
+	}
+}
+
+pub fn listen_theme_change() {
+	loop {
+		let mut settings = get_settings();
+		settings.dark_mode = get_dark_mode();
+		set_settings(settings);
+		std::thread::sleep(std::time::Duration::from_secs(1));
+	}
 }

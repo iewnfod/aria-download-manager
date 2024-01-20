@@ -1,7 +1,7 @@
 use std::{time::Duration, collections::HashMap};
 
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
-use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
+use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -78,9 +78,13 @@ impl Default for DownloadManager {
 impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
 		// 如果设置修改了，那就重新设置字体以及主题
-		if self.settings_changed {
+		// 或者 data 中保存的设置与当前设置不同，那就需要覆盖设置并重载主题
+		let settings = get_settings();
+		if self.settings_changed || settings != self.settings {
 			ctx.set_fonts(get_global_fonts());
 			ctx.set_style(get_global_style());
+			self.settings = settings;
+			self.settings.save();
 			self.settings_changed = false;
 		}
 		// 更新 sessions

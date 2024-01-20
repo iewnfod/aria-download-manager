@@ -79,3 +79,16 @@ impl Settings {
 		fs::write(&self.save_path, json).unwrap();
 	}
 }
+
+impl PartialEq for Settings {
+	fn eq(&self, other: &Self) -> bool {
+		self.split_num == other.split_num
+		&& self.proxy == other.proxy
+		&& self.user_agent == other.user_agent
+		&& self.dark_mode == other.dark_mode
+	}
+
+	fn ne(&self, other: &Self) -> bool {
+		!self.eq(other)
+	}
+}
