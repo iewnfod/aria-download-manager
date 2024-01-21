@@ -8,6 +8,8 @@ static mut STATUS_INFO: String = String::new();
 static mut WAIT_TO_START: Vec<Info> = vec![];
 static mut QUIT_REQUEST: bool = false;
 static mut FOCUS_REQUEST: bool = false;
+static mut SETTINGS_UPDATE: bool = false;
+static mut VISUAL_DARK: bool = false;
 
 static mut SETTINGS: Option<Settings> = None;
 
@@ -20,7 +22,9 @@ pub fn set_settings(new_settings: Settings) {
 pub fn get_settings() -> Settings {
 	unsafe {
 		if SETTINGS.is_none() {
-			Settings::new()
+			let settings = Settings::new();
+			set_settings(settings.clone());
+			settings
 		} else {
 			SETTINGS.clone().unwrap()
 		}
@@ -81,6 +85,30 @@ pub fn set_focus_request(f: bool) {
 	}
 }
 
+pub fn get_settings_update() -> bool {
+	unsafe {
+		SETTINGS_UPDATE
+	}
+}
+
+pub fn set_settings_update(s: bool) {
+	unsafe {
+		SETTINGS_UPDATE = s;
+	}
+}
+
+pub fn get_visual_dark() -> bool {
+	unsafe {
+		VISUAL_DARK
+	}
+}
+
+pub fn set_visual_dark(v: bool) {
+	unsafe {
+		VISUAL_DARK = v;
+	}
+}
+
 pub fn get_global_fonts() -> FontDefinitions {
 	let mut fonts = FontDefinitions::default();
 	let font_name = "LXGW".to_string();
@@ -134,8 +162,22 @@ fn get_dark_mode() -> bool {
 pub fn listen_theme_change() {
 	loop {
 		let mut settings = get_settings();
-		settings.dark_mode = get_dark_mode();
-		set_settings(settings);
+		let dark_mode = get_dark_mode();
+		// 如果发生了改变
+		if settings.dark_mode != dark_mode {
+			// 如果不自定义主题，那就修改
+			if !settings.custom_theme {
+				settings.dark_mode = dark_mode;
+				set_settings(settings);
+				set_settings_update(true);
+			} else {
+				// 如果自定义了主题，并且显示的还和设置的不一样的话，请求刷新
+				if settings.dark_mode != get_visual_dark() {
+					set_settings_update(true);
+				}
+			}
+		}
+		// 每隔一秒刷新一次
 		std::thread::sleep(std::time::Duration::from_secs(1));
 	}
 }

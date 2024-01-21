@@ -1,7 +1,7 @@
 use std::{time::Duration, collections::HashMap};
 
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
-use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_status_info, get_wait_to_start, set_focus_request, set_settings, set_status_info}, settings::Settings, aria2c, history::History, server::Info};
+use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, settings::Settings, aria2c, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -78,14 +78,19 @@ impl Default for DownloadManager {
 impl App for DownloadManager {
 	fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {
 		// 如果设置修改了，那就重新设置字体以及主题
-		// 或者 data 中保存的设置与当前设置不同，那就需要覆盖设置并重载主题
-		let settings = get_settings();
-		if self.settings_changed || settings != self.settings {
+		// 或者 data 中请求更新了，那就需要覆盖设置并重载主题
+		if self.settings_changed || get_settings_update() {
 			ctx.set_fonts(get_global_fonts());
 			ctx.set_style(get_global_style());
-			self.settings = settings;
+			self.settings = get_settings();
 			self.settings.save();
 			self.settings_changed = false;
+			// 完成更新请求
+			set_settings_update(false);
+		}
+		let visual_dark = ctx.style().visuals.dark_mode;
+		if visual_dark != get_visual_dark() {
+			set_visual_dark(visual_dark);
 		}
 		// 更新 sessions
 		aria2c::get_active(&mut self.sessions);
@@ -284,9 +289,15 @@ impl App for DownloadManager {
 						ui.text_edit_singleline(&mut self.settings.user_agent);
 						ui.end_row();
 
-						ui.label("Dark Mode");
-						ui.checkbox(&mut self.settings.dark_mode, "Enable");
+						ui.label("Custom Theme");
+						ui.checkbox(&mut self.settings.custom_theme, "Enable");
 						ui.end_row();
+
+						if self.settings.custom_theme {
+							ui.label("Dark Mode");
+							ui.checkbox(&mut self.settings.dark_mode, "Enable");
+							ui.end_row();
+						}
 					});
 					if ui.button("Apply").clicked() {
 						self.apply_settings();
