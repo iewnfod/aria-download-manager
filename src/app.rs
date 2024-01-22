@@ -67,15 +67,14 @@ impl DownloadManager {
 	}
 
 	fn update_client(&mut self) {
-		// 如果上一次是好的，那就停止上一个连接
-		if let Some(last_client) = self.client.clone() {
-			block_on(last_client.force_shutdown()).unwrap();
-		}
 		// 获取 client
 		self.client = match block_on(
 			Client::connect(SERVER_URL, None)
 		) {
-			Ok(c) => Some(c),
+			Ok(c) => {
+				set_status_info("Connect to aria2 successfully".to_string());
+				Some(c)
+			},
 			Err(e) => {
 				set_status_info(format!("Connection Error: {:?}", e.to_string()));
 				None
@@ -85,7 +84,6 @@ impl DownloadManager {
 		for (_uid, session) in self.sessions.iter_mut() {
 			session.set_client(self.client.clone());
 		}
-		set_status_info("Connect to aria2 successfully".to_string());
 	}
 }
 
