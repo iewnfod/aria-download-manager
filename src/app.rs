@@ -1,9 +1,9 @@
-use std::{time::Duration, collections::HashMap};
+use std::{collections::HashMap, time::Duration};
 
 use aria2_ws::Client;
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
 use futures::executor::block_on;
-use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, settings::Settings, aria2c::{self, SERVER_URL}, history::History, server::Info};
+use crate::{aria2c::{self, SERVER_URL}, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, history::History, server::Info, session::Session, settings::Settings};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -67,6 +67,10 @@ impl DownloadManager {
 	}
 
 	fn update_client(&mut self) {
+		// 如果上一次是好的，那就停止上一个连接
+		if let Some(last_client) = self.client.clone() {
+			block_on(last_client.force_shutdown()).unwrap();
+		}
 		// 获取 client
 		self.client = match block_on(
 			Client::connect(SERVER_URL, None)
