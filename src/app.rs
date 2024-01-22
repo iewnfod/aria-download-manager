@@ -1,4 +1,4 @@
-use std::{collections::HashMap, time::Duration};
+use std::{collections::HashMap, time::{Duration, Instant}};
 
 use aria2_ws::Client;
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
@@ -15,6 +15,7 @@ pub struct DownloadManager {
 	history_sessions: History,
 	settings_changed: bool,
 	client: Option<Client>,
+	tell_active_time: Instant,
 }
 
 impl DownloadManager {
@@ -99,6 +100,7 @@ impl Default for DownloadManager {
 			history_sessions: History::new(),
 			settings_changed: false,
 			client: None,
+			tell_active_time: Instant::now(),
 		}
 	}
 }
@@ -121,7 +123,10 @@ impl App for DownloadManager {
 			set_visual_dark(visual_dark);
 		}
 		// 更新 sessions
-		aria2c::get_active(&self.client, &mut self.sessions);
+		if self.tell_active_time.elapsed().as_secs() > 1 {
+			aria2c::get_active(&self.client, &mut self.sessions);
+			self.tell_active_time = Instant::now();
+		}
 		// 判断是否需要退出
 		if get_quit_request() {
 			println!("Quit");
