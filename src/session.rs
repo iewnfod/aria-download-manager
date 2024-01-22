@@ -1,6 +1,6 @@
 use std::{path::Path, time::Instant, process::Command};
 
-use aria2_ws::response::Status;
+use aria2_ws::{response::Status, Client};
 use url::Url;
 use uuid::Uuid;
 
@@ -14,7 +14,7 @@ const UNITS: [&str; 5] = [
 	"TB/s"
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Session {
 	uid: String,
 	gid: String,
@@ -26,6 +26,7 @@ pub struct Session {
 	running: bool,
 	name: String,
 	cookie: Vec<Cookie>,
+	client: Option<Client>,
 }
 
 impl Session {
@@ -58,6 +59,7 @@ impl Session {
 			running: false,
 			name: name.to_string(),
 			cookie: vec![],
+			client: None,
 		})
 	}
 
@@ -136,7 +138,7 @@ impl Session {
 	pub fn start(&mut self) {
 		if !self.running {
 			if self.gid.is_empty() {
-				aria2c::add_uri(self.url.clone(), self);
+				aria2c::add_uri(&self.client.clone(), self.url.clone(), self);
 			} else {
 				self.unpause();
 			}
@@ -151,19 +153,19 @@ impl Session {
 	}
 
 	pub fn remove(&mut self) {
-		aria2c::remove(self.gid.clone());
+		aria2c::remove(&self.client, self.gid.clone());
 		self.running = false;
 		set_status_info(format!("Remove `{}`", self.get_name()));
 	}
 
 	pub fn pause(&mut self) {
-		aria2c::pause(self.gid.clone());
+		aria2c::pause(&self.client, self.gid.clone());
 		self.running = false;
 		set_status_info(format!("Pause `{}`", self.get_name()));
 	}
 
 	pub fn unpause(&mut self) {
-		aria2c::unpause(self.gid.clone());
+		aria2c::unpause(&self.client, self.gid.clone());
 		self.running = true;
 		set_status_info(format!("Continue `{}`", self.get_name()));
 	}
@@ -171,7 +173,7 @@ impl Session {
 	pub fn update_status(&mut self) {
 		if !self.gid.is_empty() {
 			if self.update_time.elapsed().as_millis() > self.update_frequency {
-				aria2c::get_status(self.gid.clone(), self);
+				aria2c::get_status(&self.client.clone(), self.gid.clone(), self);
 				self.update_time = Instant::now();
 			}
 		}
@@ -329,5 +331,9 @@ impl Session {
 		} else {
 			self.status.clone().unwrap().error_message.unwrap_or("".to_string())
 		}
+	}
+
+	pub fn set_client(&mut self, client: Option<Client> ) {
+		self.client = client;
 	}
 }

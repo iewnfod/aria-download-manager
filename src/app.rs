@@ -1,7 +1,9 @@
 use std::{time::Duration, collections::HashMap};
 
+use aria2_ws::Client;
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
-use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, settings::Settings, aria2c, history::History, server::Info};
+use futures::executor::block_on;
+use crate::{session::Session, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, settings::Settings, aria2c::{self, SERVER_URL}, history::History, server::Info};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -12,16 +14,21 @@ pub struct DownloadManager {
 	show_history: bool,
 	history_sessions: History,
 	settings_changed: bool,
+	client: Option<Client>,
 }
 
 impl DownloadManager {
 	pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+		// 创建实例
+		let mut obj = Self::default();
 		// 加载字体
 		cc.egui_ctx.set_fonts(get_global_fonts());
 		// 加载样式
 		cc.egui_ctx.set_style(get_global_style());
-		// 创建实例
-		Self::default()
+		// 更新连接
+		obj.update_client();
+		// 返回
+		obj
 	}
 
 	fn new_session(&mut self, data: Info) {
@@ -58,6 +65,24 @@ impl DownloadManager {
 			session.remove();
 		}
 	}
+
+	fn update_client(&mut self) {
+		// 获取 client
+		self.client = match block_on(
+			Client::connect(SERVER_URL, None)
+		) {
+			Ok(c) => Some(c),
+			Err(e) => {
+				set_status_info(format!("Connection Error: {:?}", e.to_string()));
+				None
+			}
+		};
+		// 更新所有 session 的 client
+		for (_uid, session) in self.sessions.iter_mut() {
+			session.set_client(self.client.clone());
+		}
+		set_status_info("Connect to aria2 successfully".to_string());
+	}
 }
 
 impl Default for DownloadManager {
@@ -71,6 +96,7 @@ impl Default for DownloadManager {
 			show_history: false,
 			history_sessions: History::new(),
 			settings_changed: false,
+			client: None,
 		}
 	}
 }
@@ -93,7 +119,7 @@ impl App for DownloadManager {
 			set_visual_dark(visual_dark);
 		}
 		// 更新 sessions
-		aria2c::get_active(&mut self.sessions);
+		aria2c::get_active(&self.client, &mut self.sessions);
 		// 判断是否需要退出
 		if get_quit_request() {
 			println!("Quit");
@@ -122,12 +148,17 @@ impl App for DownloadManager {
 		// 绘制 ui
 		TopBottomPanel::top(Id::new("top")).show(ctx, |ui| {
 			ui.add_space(5.0);
-			ui.horizontal(|ui| {
-				ui.add(TextEdit::singleline(&mut self.url_input).hint_text("Target Url"));
-				if ui.button("New Session").clicked() {
-					self.new_session(Info::with_download_url(self.url_input.clone()));
-				}
-				ui.checkbox(&mut self.show_history, "Show History");
+			ScrollArea::horizontal().show(ui, |ui| {
+				ui.horizontal(|ui| {
+					ui.add(TextEdit::singleline(&mut self.url_input).hint_text("Target Url"));
+					if ui.button("New Session").clicked() {
+						self.new_session(Info::with_download_url(self.url_input.clone()));
+					}
+					ui.checkbox(&mut self.show_history, "Show History");
+					if ui.button("Reconnect Aria2").clicked() {
+						self.update_client();
+					}
+				});
 			});
 			ui.add_space(5.0);
 		});
