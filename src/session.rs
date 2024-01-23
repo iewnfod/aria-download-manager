@@ -30,7 +30,7 @@ pub struct Session {
 }
 
 impl Session {
-	pub fn new(url: String) -> Result<Self, ()> {
+	pub fn new(url: String, client: Option<Client>) -> Result<Self, ()> {
 		let parsed_url = match Url::parse(&url) {
 			Ok(u) => u,
 			Err(_) => {
@@ -59,7 +59,7 @@ impl Session {
 			running: false,
 			name: name.to_string(),
 			cookie: vec![],
-			client: None,
+			client,
 		})
 	}
 

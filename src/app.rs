@@ -35,7 +35,7 @@ impl DownloadManager {
 	fn new_session(&mut self, data: Info) {
 		let url = data.download_url.clone().trim().to_string();
 		if !url.is_empty() {
-			let mut session = match Session::new(url.clone()) {
+			let mut session = match Session::new(url.clone(), self.client.clone()) {
 				Ok(s) => s,
 				Err(_) => return,
 			};
@@ -67,6 +67,12 @@ impl DownloadManager {
 		}
 	}
 
+	fn update_session_client(&mut self) {
+		for (_uid, session) in self.sessions.iter_mut() {
+			session.set_client(self.client.clone());
+		}
+	}
+
 	fn update_client(&mut self) {
 		if let Some(client) = &self.client {
 			let status = match block_on(client.get_global_stat()) {
@@ -75,6 +81,7 @@ impl DownloadManager {
 			};
 			if status {
 				set_status_info("Connect to aria2 successfully".to_string());
+				self.update_session_client();
 				return;
 			}
 		}
@@ -92,9 +99,7 @@ impl DownloadManager {
 			}
 		};
 		// 更新所有 session 的 client
-		for (_uid, session) in self.sessions.iter_mut() {
-			session.set_client(self.client.clone());
-		}
+		self.update_session_client();
 	}
 }
 
@@ -279,7 +284,7 @@ impl App for DownloadManager {
 									session.open_webpage();
 								}
 								if ui.button("Resume").clicked() {
-									session.resume(&mut self.sessions);
+									session.resume(&mut self.sessions, self.client.clone());
 								}
 								if ui.button("Remove").clicked() {
 									self.history_sessions.remove(&uid.clone());

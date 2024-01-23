@@ -24,6 +24,7 @@ fn get_options(session: &Session) -> TaskOptions {
 
 pub fn add_uri(client: &Option<Client>, url: String, target_session: &mut Session) {
 	if client.is_none() {
+		set_status_info("Client is none. Please try to reconnect.".to_string());
 		return;
 	}
 	let gid = match block_on(
@@ -115,7 +116,7 @@ pub fn get_active(client: &Option<Client>, sessions: &mut HashMap<String, Sessio
 			for status in active {
 				if !sessions.contains_key(&status.gid) {
 					let url = status.files[0].uris[0].clone().uri;
-					let mut session = Session::new(url).unwrap();
+					let mut session = Session::new(url, client.clone()).unwrap();
 					session.start_handler(status.gid.clone());
 					sessions.insert(session.get_uid(), session);
 				}

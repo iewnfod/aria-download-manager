@@ -1,5 +1,6 @@
 use std::{collections::HashMap, path::PathBuf, process::Command};
 
+use aria2_ws::Client;
 use chrono::{Local, Datelike, Timelike};
 use serde::{Serialize, Deserialize};
 
@@ -48,8 +49,8 @@ impl HistorySession {
 		self.name.clone()
 	}
 
-	pub fn resume(&self, sessions: &mut HashMap<String, Session>) {
-		let mut session = Session::new(self.url.clone()).unwrap();
+	pub fn resume(&self, sessions: &mut HashMap<String, Session>, client: Option<Client>) {
+		let mut session = Session::new(self.url.clone(), client).unwrap();
 		session.start();
 		sessions.insert(session.get_uid(), session);
 	}
