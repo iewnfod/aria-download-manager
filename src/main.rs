@@ -11,6 +11,7 @@ mod server;
 mod settings;
 mod aria2c;
 mod history;
+mod widgets;
 
 #[tokio::main]
 async fn main() {

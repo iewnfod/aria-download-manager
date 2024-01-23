@@ -13,6 +13,8 @@ static mut VISUAL_DARK: bool = false;
 
 static mut SETTINGS: Option<Settings> = None;
 
+pub const CLICK_TO_COPY_PROMPT: &str = "Click to Copy";
+
 pub fn set_settings(new_settings: Settings) {
 	unsafe {
 		SETTINGS = Some(new_settings);

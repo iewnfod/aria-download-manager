@@ -3,7 +3,7 @@ use std::{collections::HashMap, time::{Duration, Instant}};
 use aria2_ws::Client;
 use eframe::{App, egui::{CentralPanel, CollapsingHeader, DragValue, Grid, Id, ProgressBar, ScrollArea, TextEdit, TopBottomPanel}};
 use futures::executor::block_on;
-use crate::{aria2c::{self, SERVER_URL}, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, history::History, server::Info, session::Session, settings::Settings};
+use crate::{aria2c::{self, SERVER_URL}, data::{clear_wait_to_start, get_focus_request, get_global_fonts, get_global_style, get_quit_request, get_settings, get_settings_update, get_status_info, get_visual_dark, get_wait_to_start, set_focus_request, set_settings, set_settings_update, set_status_info, set_visual_dark}, history::History, server::Info, session::Session, settings::Settings, widgets::click_copy_label};
 
 pub struct DownloadManager {
 	sessions: HashMap<String, Session>,
@@ -225,44 +225,44 @@ impl App for DownloadManager {
 							.num_columns(2)
 							.show(ui, |ui| {
 								ui.label("Gid");
-								ui.label(session.get_gid());
+								click_copy_label(ui, session.get_gid());
 								ui.end_row();
 
 								ui.label("Download Url");
-								ui.label(session.get_url());
+								click_copy_label(ui, session.get_url());
 								ui.end_row();
 
 								ui.label("Webpage url");
-								ui.label(session.get_webpage());
+								click_copy_label(ui, session.get_webpage());
 								ui.end_row();
 
 								ui.label("File");
-								ui.label(session.get_file());
+								click_copy_label(ui, session.get_file());
 								ui.end_row();
 
 								ui.label("Completed");
-								ui.label(session.get_complete_data());
+								click_copy_label(ui, session.get_complete_data());
 								ui.end_row();
 
 								ui.label("Verified");
-								ui.label(session.get_verified_data());
+								click_copy_label(ui, session.get_verified_data());
 								ui.end_row();
 
 								ui.label("Connection Number");
-								ui.label(session.get_connections_num().to_string());
+								click_copy_label(ui, session.get_connections_num().to_string());
 								ui.end_row();
 
 								ui.label("Pieces");
-								ui.label(format!("{}B * {}", session.get_pieces_length(), session.get_pieces_num()));
+								click_copy_label(ui, format!("{}B * {}", session.get_pieces_length(), session.get_pieces_num()));
 								ui.end_row();
 
 								if session.is_error() {
 									ui.label("Error Code");
-									ui.label(session.get_error_code());
+									click_copy_label(ui, session.get_error_code());
 									ui.end_row();
 
 									ui.label("Error Message");
-									ui.label(session.get_error_msg());
+									click_copy_label(ui, session.get_error_msg());
 									ui.end_row();
 								}
 							});
@@ -297,19 +297,19 @@ impl App for DownloadManager {
 								.num_columns(2)
 								.show(ui, |ui| {
 									ui.label("File");
-									ui.label(session.get_file());
+									click_copy_label(ui, session.get_file());
 									ui.end_row();
 
 									ui.label("Download Url");
-									ui.label(session.get_url());
+									click_copy_label(ui, session.get_url());
 									ui.end_row();
 
 									ui.label("Webpage Url");
-									ui.label(session.get_webpage());
+									click_copy_label(ui, session.get_webpage());
 									ui.end_row();
 
 									ui.label("Start Time");
-									ui.label(session.get_time());
+									click_copy_label(ui, session.get_time());
 									ui.end_row();
 								});
 							});
