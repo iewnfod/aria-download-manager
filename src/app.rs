@@ -68,6 +68,16 @@ impl DownloadManager {
 	}
 
 	fn update_client(&mut self) {
+		if let Some(client) = &self.client {
+			let status = match block_on(client.get_global_stat()) {
+				Ok(_) => true,
+				Err(_) => false,
+			};
+			if status {
+				set_status_info("Connect to aria2 successfully".to_string());
+				return;
+			}
+		}
 		// 获取 client
 		self.client = match block_on(
 			Client::connect(SERVER_URL, None)
