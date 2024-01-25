@@ -9,11 +9,14 @@
 <a href="./README_zh.md">中文</a> | <a href="./README.md">English</a>
 </p>
 
-
-## Show
+## 展示
 ![show_img](./assets/show.png)
 
-## Build
+## 依赖
+* rust `>= 1.74.0`
+* aria2
+
+## 构建
 1. 克隆此仓库.
 ```shell
 git clone https://github.com/iewnfod/aria-download-manager.git
@@ -24,7 +27,7 @@ scripts/build.sh
 ```
 3. target 文件夹中将会生成后缀名为 `.app` 和 `.dmg` 的应用文件
 
-## Develop
+## 开发
 ### Adm Tray
 1. 使用 `cargo build` 为下载器创建一个 debug 版的可执行文件
 2. 将此文件移动到 adm-tray 的 target 目录中

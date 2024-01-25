@@ -12,6 +12,10 @@
 ## Show
 ![show_img](./assets/show.png)
 
+## Requirements
+* rust `>= 1.74.0`
+* aria2
+
 ## Build
 1. Clone the repo.
 ```shell
