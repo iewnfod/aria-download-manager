@@ -17,11 +17,11 @@
 * aria2
 
 ## 构建
-1. 克隆此仓库.
+1. 克隆此仓库
 ```shell
 git clone https://github.com/iewnfod/aria-download-manager.git
 ```
-2. 运行打包脚本.
+2. 运行打包脚本
 ```shell
 scripts/build.sh
 ```
