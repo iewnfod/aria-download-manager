@@ -193,33 +193,34 @@ impl App for DownloadManager {
 					if !session.is_completed() {
 						all_finished = false;
 					}
-					ScrollArea::horizontal().id_source(uid).show(ui, |ui| {
-						ui.horizontal(|ui| {
-							ui.label(session.get_name());
-							if ui.button("Remove").clicked() {
-								self.wait_to_remove.push(session.clone());
-							}
-							if ui.button("Open").clicked() {
-								session.open();
-							}
-							if ui.button("Open Folder").clicked() {
-								session.open_folder();
-							}
-						});
-						ui.horizontal(|ui| {
-							if ui.button("Continue").clicked() {
-								session.start();
-							}
-							if ui.button("Pause").clicked() {
-								session.pause();
-							}
-							ui.add(
-								ProgressBar::new(session.get_process())
-								.text(session.get_speed())
-							);
-						});
-						CollapsingHeader::new("Detailed Information")
-						.id_source(uid.to_string() + "detail")
+					ui.horizontal(|ui| {
+						if ui.button("Remove").clicked() {
+							self.wait_to_remove.push(session.clone());
+						}
+						if ui.button("Open").clicked() {
+							session.open();
+						}
+						if ui.button("Open Folder").clicked() {
+							session.open_folder();
+						}
+						click_copy_label(ui, session.get_name());
+					});
+					ui.horizontal(|ui| {
+						if ui.button("Continue").clicked() {
+							session.start();
+						}
+						if ui.button("Pause").clicked() {
+							session.pause();
+						}
+						ui.add(
+							ProgressBar::new(session.get_process())
+							.text(session.get_speed())
+						);
+					});
+					CollapsingHeader::new("Detailed Information")
+					.id_source(uid.to_string() + "detail")
+					.show(ui, |ui| {
+						ScrollArea::horizontal().id_source(uid.to_string() + "detail" + "scroll")
 						.show(ui, |ui| {
 							Grid::new(session.get_uid() + "grid")
 							.num_columns(2)
@@ -276,20 +277,20 @@ impl App for DownloadManager {
 						if self.sessions.contains_key(&uid) {
 							continue;
 						}
+						ui.horizontal(|ui| {
+							if ui.button("Open in Browser").clicked() {
+								session.open_webpage();
+							}
+							if ui.button("Resume").clicked() {
+								session.resume(&mut self.sessions, self.client.clone());
+							}
+							if ui.button("Remove").clicked() {
+								self.history_sessions.remove(&uid.clone());
+							}
+							click_copy_label(ui, session.get_name());
+						});
 						ScrollArea::horizontal().id_source(format!("{}scroll", &uid))
 						.show(ui, |ui| {
-							ui.horizontal(|ui| {
-								ui.label(session.get_name());
-								if ui.button("Open in Browser").clicked() {
-									session.open_webpage();
-								}
-								if ui.button("Resume").clicked() {
-									session.resume(&mut self.sessions, self.client.clone());
-								}
-								if ui.button("Remove").clicked() {
-									self.history_sessions.remove(&uid.clone());
-								}
-							});
 							CollapsingHeader::new("Detailed Information")
 							.id_source(format!("{}history", &uid))
 							.show(ui, |ui| {
@@ -314,6 +315,7 @@ impl App for DownloadManager {
 								});
 							});
 						});
+						ui.separator();
 					}
 				}
 				ui.add_space(ctx.used_size().y);
