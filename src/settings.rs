@@ -26,6 +26,7 @@ pub struct Settings {
 	pub user_agent: String,
 	pub custom_theme: bool,
 	pub dark_mode: bool,
+	pub close_after_seconds: u64,
 	save_path: PathBuf,
 }
 
@@ -38,6 +39,7 @@ impl Default for Settings {
 			user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
 			custom_theme: false,
 			dark_mode: false,
+			close_after_seconds: 0,
 			save_path
 		}
 	}

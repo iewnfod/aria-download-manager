@@ -16,6 +16,7 @@ pub struct DownloadManager {
 	settings_changed: bool,
 	client: Option<Client>,
 	tell_active_time: Instant,
+	startup_time: Instant,
 }
 
 impl DownloadManager {
@@ -59,12 +60,6 @@ impl DownloadManager {
 		self.settings_changed = true;
 		// 提示信息
 		set_status_info("Apply Settings".to_string());
-	}
-
-	fn remove_all(&mut self) {
-		for (_uid, session) in self.sessions.iter_mut() {
-			session.remove();
-		}
 	}
 
 	fn update_session_client(&mut self) {
@@ -116,6 +111,7 @@ impl Default for DownloadManager {
 			settings_changed: false,
 			client: None,
 			tell_active_time: Instant::now(),
+			startup_time: Instant::now(),
 		}
 	}
 }
@@ -145,7 +141,11 @@ impl App for DownloadManager {
 		// 判断是否需要退出
 		if get_quit_request() {
 			println!("Quit");
-			self.remove_all();
+			frame.close();
+		}
+		// 判断是否超过，等待时间
+		if self.settings.close_after_seconds != 0 && self.startup_time.elapsed().as_secs() > self.settings.close_after_seconds {
+			println!("Time Out Quit");
 			frame.close();
 		}
 		// 处理内容
@@ -340,6 +340,13 @@ impl App for DownloadManager {
 
 						ui.label("User Agent");
 						ui.text_edit_singleline(&mut self.settings.user_agent);
+						ui.end_row();
+
+						ui.label("Close after Seconds");
+						ui.horizontal(|ui| {
+							ui.add(DragValue::new(&mut self.settings.close_after_seconds).clamp_range(0..=3600));
+							ui.label("(0 represents never close)");
+						});
 						ui.end_row();
 
 						ui.label("Custom Theme");
