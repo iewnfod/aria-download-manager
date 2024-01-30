@@ -17,6 +17,7 @@ fn get_options(session: &Session) -> TaskOptions {
 	opt.header = Some(vec![
 		format!("Cookie: {}", session.get_cookie()),
 		format!("User-Agent: {}", settings.user_agent),
+		format!("Referer: {}", session.get_referer()),
 	]);
 	opt.dir = Some(format!("/Users/{}/Downloads", users::get_current_username().unwrap().to_str().unwrap()));
 	opt

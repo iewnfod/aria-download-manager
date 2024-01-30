@@ -12,6 +12,7 @@ pub struct Info {
 	pub download_url: String,
 	pub resume_state: bool,
 	pub download_cookie: Vec<Cookie>,
+	pub download_referer: String,
 }
 
 impl Info {
@@ -23,6 +24,7 @@ impl Info {
 			download_url: url,
 			resume_state: false,
 			download_cookie: vec![],
+			download_referer: "".to_string(),
 		}
 	}
 }

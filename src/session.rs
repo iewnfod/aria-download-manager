@@ -26,6 +26,7 @@ pub struct Session {
 	running: bool,
 	name: String,
 	cookie: Vec<Cookie>,
+	referrer: String,
 	client: Option<Client>,
 }
 
@@ -59,6 +60,7 @@ impl Session {
 			running: false,
 			name: name.to_string(),
 			cookie: vec![],
+			referrer: String::new(),
 			client,
 		})
 	}
@@ -255,6 +257,14 @@ impl Session {
 
 	pub fn get_cookie(&self) -> String {
 		self.cookie.iter().map(|c| c.to_string()).collect::<Vec<String>>().join("; ")
+	}
+
+	pub fn set_referer(&mut self, referrer: String) {
+		self.referrer = referrer;
+	}
+
+	pub fn get_referer(&self) -> String {
+		self.referrer.clone()
 	}
 
 	pub fn set_webpage(&mut self, webpage: String) {
