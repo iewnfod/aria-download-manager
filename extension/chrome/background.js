@@ -51,13 +51,15 @@ chrome.downloads.onCreated.addListener(function (downloadItem) {
     const downloadId = downloadItem.id;
     // 获取下载信息
     chrome.cookies.getAll({ url: downloadItem.url }, function (cookies) {
+        const referer = downloadItem.referrer || '';
         let downloadData = {
             downloadId: downloadId,
             size: downloadItem.totalBytes,
             webpageUrl: downloadItem.url,
             downloadUrl: downloadItem.finalUrl,
             resumeState: downloadItem.canResume,
-            downloadCookie: cookies
+            downloadCookie: cookies,
+            downloadReferer: referer
         };
     
         if (devMode) {
